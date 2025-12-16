@@ -1,0 +1,113 @@
+/* Khai báo màu dùng chung (nếu chưa có trong file global) */
+:root {
+    --color-primary: #0075F3;
+    --color-hover: #005bb5;
+}
+
+.login-page {
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    background-color: #fff;
+    overflow: hidden; /* Chặn thanh cuộn */
+}
+
+/* --- CỘT TRÁI (ẢNH) --- */
+.login-page .login-left {
+    flex: 1; /* Chiếm 50% */
+    background: linear-gradient(135deg, #CFE7FF 0%, #F4FAFF 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+}
+
+.login-page .login-left img {
+    max-width: 80%;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.1));
+}
+
+.login-page .login-left h2 {
+    margin-top: 30px;
+    font-size: 28px;
+    color: var(--color-primary);
+    font-weight: 700;
+}
+
+/* Ẩn cột trái khi màn hình nhỏ (Mobile/Tablet) */
+@media (max-width: 992px) {
+    .login-page .login-left {
+        display: none;
+    }
+}
+
+/* --- CỘT PHẢI (FORM) --- */
+.login-page .login-right {
+    flex: 1; /* Chiếm 50% */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background-color: #fff;
+}
+
+.login-page .login-form-container {
+    width: 100%;
+    max-width: 400px; /* Giới hạn chiều rộng form cho đẹp */
+    padding: 20px;
+}
+
+.login-page h1 {
+    font-size: 32px;
+    font-weight: 800;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.login-page .sub-text {
+    color: #888;
+    margin-bottom: 30px;
+    display: block;
+    font-size: 15px;
+}
+
+/* Custom nút Login của Antd */
+.login-page .btn-login {
+    height: 50px !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+    background-color: var(--color-primary) !important;
+    margin-top: 10px;
+}
+
+.login-page .btn-login:hover {
+    background-color: var(--color-hover) !important;
+}
+
+/* Phần link Đăng ký / Quên MK */
+.login-page .auth-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.login-page .auth-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+    font-size: 14px;
+}
+
+.login-page a {
+    color: var(--color-primary);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.login-page a:hover {
+    text-decoration: underline;
+}

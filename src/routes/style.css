@@ -1,9 +1,10 @@
 .login,.register{
     text-align: center;
     padding: 30px;
+    padding-top: 70px;
     
 }
-.login h2{
+.login h2,.register h2{
     font-size: 30px;
 }
 .login input,.register input{
@@ -11,7 +12,7 @@
     padding: 10px;
     width: 400px;
     border-radius: 20px;
-    border: 1px solid #89B449;
+    border: 1px solid #5292c7;
     font-size: 17px;
 
 }
@@ -21,8 +22,17 @@
     width: 120px;
     border-radius: 20px;
     border: 0;
-    background: #89B449;
+    background: #2289ff;
     color: white;
     cursor: pointer;
     font-size: 18px;
+}
+.background_phu{
+    background-image: url('../../public/background_phu.png');
+    background-size:cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    width: 100%;
+    height: 100vh;
+    opacity: 0.8;
 }

@@ -1,0 +1,525 @@
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap');
+
+:root {
+    --color-one: #0075F3;
+    --color-two: #05060F;
+    --color-three: #DBECFE;
+    --color-text: #FF7526; /* Màu cam cho nút */
+    --color-text2: #CFE7FF;
+    --color-text3: #F4FAFF;
+    --font: "EB Garamond", sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+/* 1. CẤU TRÚC CHUNG */
+.section1 {
+    /* Gradient nền như cũ của bạn */
+    background: linear-gradient(to top, var(--color-text2), var(--color-text3));
+    padding: 60px 0; /* Khoảng cách trên dưới */
+    min-height: 80vh; /* Chiều cao tối thiểu cho đẹp */
+    display: flex;
+    align-items: center;
+}
+
+/* Container chuẩn giúp nội dung không bị dính lề */
+.container {
+    width: 100%;
+    max-width: 1200px; /* Giới hạn chiều rộng */
+    margin: 0 auto;    /* Tự động căn giữa */
+    padding: 0 20px;   /* Cách lề trái phải trên mobile */
+}
+
+/* 2. PHẦN CHỮ (TEXT) */
+.sub-title {
+    font-size: 24px;
+    color: var(--color-two);
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.main-title {
+    font-size: 60px; /* Chữ to trên PC */
+    font-weight: 800;
+    color: var(--color-one);
+    line-height: 1.1;
+    margin-bottom: 20px;
+}
+
+.highlight-text {
+    color: var(--color-one); /* Hoặc dùng màu khác để nhấn */
+    font-size: 70px;
+}
+
+.description {
+    font-size: 20px;
+    color: #444;
+    margin-bottom: 30px;
+    font-weight: 500;
+}
+
+/* Tag ưu điểm */
+.tags-wrapper {
+    display: flex;
+    flex-wrap: wrap; /* Tự xuống dòng nếu hết chỗ */
+    gap: 15px;
+    margin-bottom: 40px;
+}
+
+.tag-item {
+    background-color: #fff;
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-two);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Khoảng cách giữa icon check và chữ */
+}
+
+/* Nút bấm màu cam */
+.btn-orange {
+    background-color: var(--color-text) !important;
+    border-color: var(--color-text) !important;
+    height: auto !important;
+    padding: 15px 40px !important;
+    font-size: 20px !important;
+    font-weight: bold !important;
+    border-radius: 50px !important;
+    box-shadow: 0 10px 20px rgba(255, 117, 38, 0.3);
+    transition: transform 0.3s ease;
+}
+
+.btn-orange:hover {
+    transform: translateY(-3px);
+    opacity: 0.9;
+}
+
+/* 3. PHẦN ẢNH (IMAGE) */
+.img-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.img-wrapper img {
+    width: 100%;
+    max-width: 550px; /* Giới hạn độ to của ảnh */
+    height: auto;
+    object-fit: contain;
+    /* Hiệu ứng nổi ảnh */
+    filter: drop-shadow(0 20px 30px rgba(0,0,0,0.1));
+    animation: float 3s ease-in-out infinite; /* Ảnh bay bay nhẹ */
+}
+
+/* Animation ảnh bay nhẹ */
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+
+/* 4. RESPONSIVE (QUAN TRỌNG - CHỈNH CHO MOBILE) */
+@media (max-width: 768px) {
+    .section1 {
+        padding: 40px 0;
+        text-align: center; /* Căn giữa chữ trên mobile */
+    }
+
+    .main-title {
+        font-size: 40px; /* Giảm cỡ chữ tiêu đề */
+    }
+    
+    .highlight-text {
+        font-size: 45px;
+    }
+
+    .tags-wrapper {
+        justify-content: center; /* Căn giữa các tag */
+    }
+
+    .img-wrapper {
+        margin-top: 30px; /* Cách chữ ra một đoạn */
+    }
+}
+/* --- CSS CHO SECTION 2 --- */
+
+/* 1. Cài đặt chung cho Section 2 */
+.section2 {
+    padding: 80px 0; /* Cách trên dưới cho thoáng */
+    background-color: #fff; /* Nền trắng sạch sẽ */
+}
+
+/* Container ảo để căn giữa nội dung (như mình đã tư vấn trước đó) */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* 2. Phần tiêu đề Section */
+.section-title {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.section-title h2 {
+    font-size: 40px;
+    font-weight: 700;
+    color: var(--color-two); /* Màu đen đậm */
+    margin-bottom: 10px;
+}
+
+.section-title p {
+    font-size: 18px;
+    color: #666;
+}
+
+/* 3. Style cho cái Card (Thẻ tính năng) */
+.feature-card {
+    background: #fff;
+    padding: 40px 30px;
+    border-radius: 20px;
+    text-align: center;
+    border: 1px solid #eee; /* Viền mỏng */
+    transition: all 0.3s ease; /* Hiệu ứng mượt mà */
+    height: 100%; /* Để các card bằng nhau */
+}
+
+/* Hiệu ứng khi di chuột vào Card: Nổi lên và đổ bóng */
+.feature-card:hover {
+    transform: translateY(-10px); /* Bay lên 10px */
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); /* Đổ bóng đậm */
+    border-color: transparent;
+}
+
+/* 4. Style cho hộp Icon tròn tròn */
+.icon-box {
+    width: 80px;
+    height: 80px;
+    line-height: 80px; /* Căn giữa icon theo chiều dọc */
+    border-radius: 50%; /* Làm tròn */
+    margin: 0 auto 25px; /* Căn giữa và cách chữ bên dưới */
+    font-size: 32px; /* Kích thước icon */
+}
+
+/* Màu riêng cho từng Icon */
+.icon-blue {
+    background-color: #e6f7ff;
+    color: #1890ff;
+}
+.icon-green {
+    background-color: #f6ffed;
+    color: #52c41a;
+}
+.icon-purple {
+    background-color: #f9f0ff;
+    color: #722ed1;
+}
+
+/* 5. Chữ trong Card */
+.feature-card h3 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--color-two);
+    margin-bottom: 15px;
+}
+
+.feature-card p {
+    font-size: 16px;
+    color: #666;
+    line-height: 1.6; /* Dãn dòng cho dễ đọc */
+    margin-bottom: 25px;
+}
+
+/* 6. Link "Học ngay" */
+.learn-more {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-one); /* Màu xanh chủ đạo */
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: gap 0.2s;
+}
+
+.learn-more:hover {
+    gap: 10px; /* Mũi tên chạy ra xa một chút khi hover */
+}
+/* --- CSS CHO SECTION 3 --- */
+
+.section3 {
+    /* Dùng màu nền nhạt để tách biệt với Section 2 (màu trắng) */
+    background-color: #F8FBFF; 
+    padding: 80px 0;
+}
+
+/* Style cho thẻ Topic Card */
+.topic-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex; /* Xếp icon và chữ nằm dọc hoặc ngang tùy ý, ở đây mình để flex column cho gọn */
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    border: 1px solid #eee;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    height: 100%; /* Để các thẻ cao bằng nhau */
+}
+
+/* Hiệu ứng hover: Nổi lên và đổi màu viền */
+.topic-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--color-one);
+    box-shadow: 0 10px 20px rgba(0, 117, 243, 0.1);
+}
+
+.topic-card:hover .topic-icon {
+    background-color: var(--color-one);
+    color: #fff;
+    transform: rotateY(180deg); /* Xoay icon chơi chơi cho vui mắt */
+}
+
+/* Phần Icon */
+.topic-icon {
+    width: 60px;
+    height: 60px;
+    background-color: var(--color-three); /* Màu nền xanh nhạt của bạn */
+    color: var(--color-one);
+    font-size: 24px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 15px;
+    transition: all 0.5s ease; /* Thời gian xoay icon */
+}
+
+/* Phần Chữ */
+.topic-info h4 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-two);
+    margin-bottom: 5px;
+}
+
+.topic-info span {
+    font-size: 14px;
+    color: #888;
+}
+
+/* Nút "Xem tất cả" (Dạng Outline - Viền màu) */
+.btn-outline {
+    background: transparent !important;
+    border: 2px solid var(--color-one) !important;
+    color: var(--color-one) !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    padding: 10px 30px !important;
+    border-radius: 30px !important;
+    height: auto !important;
+}
+
+.btn-outline:hover {
+    background-color: var(--color-one) !important;
+    color: #fff !important;
+}
+
+/* Responsive cho Section 3 */
+@media (max-width: 576px) {
+    /* Trên điện thoại nhỏ thì 2 cột vẫn ok, nhưng giảm padding đi */
+    .topic-card {
+        padding: 15px;
+    }
+    .topic-info h4 {
+        font-size: 16px;
+    }
+}
+/* --- CSS CHO SECTION KIỂM TRA TRÌNH ĐỘ --- */
+.section-test {
+    padding: 60px 0;
+    background-color: #F8FBFF; /* Cùng màu nền với Section 3 để liền mạch */
+}
+
+/* Cái hộp Banner to */
+.test-banner {
+    /* Gradient màu tím xanh để tạo sự khác biệt và cao cấp */
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 24px; /* Bo tròn mạnh */
+    padding: 50px;
+    color: #fff;
+    position: relative;
+    overflow: hidden; /* Để cắt mấy cái hình trang trí bị thừa ra */
+    box-shadow: 0 20px 40px rgba(118, 75, 162, 0.2);
+}
+
+/* Text nội dung */
+.test-content h2 {
+    font-size: 32px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 15px;
+}
+
+.test-content p {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 30px;
+    max-width: 90%;
+}
+
+/* Cái nhãn "Được đề xuất" nhỏ nhỏ trên đầu */
+.badge-test {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(5px); /* Hiệu ứng kính mờ */
+}
+
+/* Nút bấm (Viền trắng) */
+.btn-white-outline {
+    background: transparent !important;
+    border: 2px solid #fff !important;
+    color: #fff !important;
+    font-weight: 700 !important;
+    height: 50px !important;
+    padding: 0 30px !important;
+    border-radius: 25px !important;
+    font-size: 16px !important;
+}
+
+.btn-white-outline:hover {
+    background: #fff !important;
+    color: #764ba2 !important; /* Đổi màu chữ khi hover */
+}
+
+/* --- PHẦN HÌNH ẢNH TRANG TRÍ BÊN PHẢI --- */
+.test-image-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    position: relative;
+}
+
+/* Vòng tròn điểm số giả lập */
+.score-circle {
+    width: 150px;
+    height: 150px;
+    border: 4px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    z-index: 2;
+    animation: pulse 2s infinite; /* Hiệu ứng đập đập */
+}
+
+.score-text {
+    font-size: 18px;
+    font-weight: 700;
+    margin-top: 10px;
+}
+
+/* Các chấm tròn trang trí bay bay */
+.decor-dot {
+    position: absolute;
+    border-radius: 50%;
+    background: linear-gradient(to top, #fff, transparent);
+    opacity: 0.3;
+}
+
+.dot-1 {
+    width: 80px;
+    height: 80px;
+    top: -10px;
+    right: 20px;
+    background: #00d2ff;
+}
+
+.dot-2 {
+    width: 50px;
+    height: 50px;
+    bottom: 0;
+    left: 40px;
+    background: #3a7bd5;
+}
+
+/* Animation nhịp đập cho vòng tròn */
+@keyframes pulse {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); }
+    70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .test-banner {
+        padding: 30px 20px;
+        text-align: center;
+    }
+    
+    .test-content p {
+        max-width: 100%;
+    }
+
+    .test-image-box {
+        margin-top: 30px;
+    }
+}
+.section4-cta {
+    /* Tạo background gradient chéo rất đẹp */
+    background: linear-gradient(135deg, var(--color-one) 0%, #0050b3 100%);
+    padding: 80px 0;
+    color: #fff;
+    text-align: center;
+}
+
+.section4-cta h2 {
+    font-size: 36px;
+    font-weight: 700;
+    color: #fff; /* Chữ trắng trên nền xanh */
+    margin-bottom: 15px;
+}
+
+.section4-cta p {
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.9); /* Trắng hơi mờ chút */
+    margin-bottom: 30px;
+}
+
+/* Nút màu trắng chữ xanh (Đảo ngược lại với nút ở trên) */
+.btn-white {
+    background-color: #fff !important;
+    color: var(--color-one) !important;
+    border: none !important;
+    height: auto !important;
+    padding: 12px 35px !important;
+    font-size: 18px !important;
+    font-weight: bold !important;
+    border-radius: 50px !important;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.btn-white:hover {
+    background-color: #f0f0f0 !important;
+    transform: scale(1.05); /* Phóng to nhẹ khi hover */
+}
