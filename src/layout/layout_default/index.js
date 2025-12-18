@@ -3,7 +3,8 @@ import { Row, Col, Avatar, Space, Dropdown, Button } from "antd";
 import { 
     FacebookFilled, YoutubeFilled, InstagramFilled, 
     MailOutlined, PhoneOutlined, EnvironmentOutlined, 
-    LogoutOutlined, UserOutlined, DownOutlined 
+    LogoutOutlined, UserOutlined, DownOutlined,
+    SafetyCertificateFilled 
 } from '@ant-design/icons';
 
 // 1. IMPORT REDUX
@@ -113,44 +114,97 @@ function Layout() {
                 <Outlet />
             </main>
 
-            {/* --- FOOTER GIỮ NGUYÊN --- */}
-            <footer className="layout__footer">
-                <div className="layout__footer-container">
-                    <Row gutter={[40, 40]}>
-                        <Col xs={24} sm={12} md={8}>
-                            <div className="layout__footer-logo">English AI</div>
-                            <p className="layout__footer-desc">
-                                Nền tảng học tiếng Anh thông minh, giúp bạn bứt phá kỹ năng giao tiếp.
-                            </p>
-                            <div className="layout__footer-socials">
-                                <FacebookFilled /> <YoutubeFilled /> <InstagramFilled />
+            {/* --- FOOTER STYLE PREP (PHIÊN BẢN WEBSITE) --- */}
+                    <footer className="layout__footer auto-hide"> 
+                        <div className="layout__footer-container">
+                            
+                            {/* PHẦN TRÊN: CÁC CỘT LIÊN KẾT */}
+                            <div className="footer-top">
+                                <Row gutter={[40, 40]}>
+                                    <Col xs={24} sm={12} md={7}>
+                                        <div className="layout__footer-logo" style={{ color: '#0075F3', fontSize: '28px', fontWeight: 'bold', marginBottom: '15px' }}>
+                                            English AI
+                                        </div>
+                                        <p style={{ color: '#666', fontSize: '14px', lineHeight: '1.6', marginBottom: '20px' }}>
+                                            Nền tảng học tiếng Anh trực tuyến ứng dụng công nghệ AI, giúp học viên tối ưu hóa lộ trình và bứt phá kỹ năng giao tiếp.
+                                        </p>
+                                        <h4>KẾT NỐI VỚI CHÚNG TÔI</h4>
+                                        <Space size="middle">
+                                            <Button shape="circle" icon={<FacebookFilled />} />
+                                            <Button shape="circle" icon={<YoutubeFilled />} />
+                                            <Button shape="circle" icon={<InstagramFilled />} />
+                                        </Space>
+                                    </Col>
+
+                                    <Col xs={24} sm={12} md={5}>
+                                        <h4>CHƯƠNG TRÌNH HỌC</h4>
+                                        <ul className="footer-links">
+                                            <li><NavLink to="/conversation">Luyện hội thoại AI</NavLink></li>
+                                            <li><NavLink to="/mindmap">Từ vựng Mindmap</NavLink></li>
+                                            <li><NavLink to="#">Tiếng Anh cơ bản</NavLink></li>
+                                            <li><NavLink to="#">Luyện phát âm chuẩn</NavLink></li>
+                                        </ul>
+                                    </Col>
+
+                                    <Col xs={24} sm={12} md={6}>
+                                        <h4>HỖ TRỢ KHÁCH HÀNG</h4>
+                                        <ul className="footer-links">
+                                            <li><NavLink to="#">Hướng dẫn học tập</NavLink></li>
+                                            <li><NavLink to="#">Kích hoạt mã Premium</NavLink></li>
+                                            <li><NavLink to="#">Câu hỏi thường gặp (FAQs)</NavLink></li>
+                                            <li><NavLink to="#">Chính sách hoàn tiền</NavLink></li>
+                                        </ul>
+                                    </Col>
+
+                                    <Col xs={24} sm={12} md={6}>
+                                        <h4>VỀ CHÚNG TÔI</h4>
+                                        <ul className="footer-links">
+                                            <li><NavLink to="/about">Câu chuyện thương hiệu</NavLink></li>
+                                            <li><NavLink to="#">Chính sách bảo mật</NavLink></li>
+                                            <li><NavLink to="#">Điều khoản dịch vụ</NavLink></li>
+                                            <li><NavLink to="#">Liên hệ</NavLink></li>
+                                        </ul>
+                                    </Col>
+                                </Row>
                             </div>
-                        </Col>
-                        <Col xs={24} sm={12} md={6}>
-                            <h4>Liên kết nhanh</h4>
-                            <ul className="layout__footer-list">
-                                <li><NavLink to="/">Trang chủ</NavLink></li>
-                                <li><NavLink to="/conversation">Hội thoại</NavLink></li>
-                                <li><NavLink to="/about">Về chúng tôi</NavLink></li>
-                            </ul>
-                        </Col>
-                        <Col xs={24} sm={12} md={10}>
-                            <h4>Liên hệ</h4>
-                            <ul className="layout__footer-contact">
-                                <li><EnvironmentOutlined /> <span>Đặng Thùy Trâm, Bình Thạnh, HCM</span></li>
-                                <li><PhoneOutlined /> <span>+84 942 217 271</span></li>
-                                <li><MailOutlined /> <span>danganhtuongg@gmail.com</span></li>
-                            </ul>
-                        </Col>
-                    </Row>
-                    <div className="layout__footer-copyright">
-                        @Copyright by Dang Anh Tuongg
-                    </div>
-                </div>
-            </footer>
+
+                            <div className="footer-divider"></div>
+
+                            {/* PHẦN DƯỚI: THÔNG TIN PHÁP LÝ & CÔNG TY */}
+                            <div className="footer-bottom">
+                                <Row gutter={[40, 20]}>
+                                    <Col xs={24} md={14}>
+                                        <h5>CÔNG TY CỔ PHẦN CÔNG NGHỆ GIÁO DỤC ENGLISH AI</h5>
+                                        <p><strong>Mã số doanh nghiệp:</strong> 0123456789 do Sở Kế hoạch và Đầu tư TP.HCM cấp.</p>
+                                        <p><strong>Địa chỉ:</strong> Tòa nhà English AI, Đặng Thùy Trâm, Phường 13, Quận Bình Thạnh, TP. Hồ Chí Minh.</p>
+                                        <p><strong>Đại diện pháp luật:</strong> Đặng Anh Tường.</p>
+                                    </Col>
+                                    <Col xs={24} md={10}>
+                                        <h5>TRUNG TÂM NGOẠI NGỮ ENGLISH AI</h5>
+                                        <p><PhoneOutlined /> <strong>Hotline:</strong> +84 942 217 271 (8:00 - 21:00)</p>
+                                        <p><MailOutlined /> <strong>Email:</strong> danganhtuongg@gmail.com</p>
+                                        <div className="cert-logos">
+                                            <Space size="large">
+                                                <div className="bct-logo" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <SafetyCertificateFilled style={{ fontSize: 28, color: '#13c2c2' }} />
+                                                    <span style={{ fontSize: 11, color: '#999', fontWeight: 500 }}>ĐÃ THÔNG BÁO BỘ CÔNG THƯƠNG</span>
+                                                </div>
+                                            </Space>
+                                        </div>
+                                    </Col>
+                                </Row>
+                            </div>
+                            
+                            <div className="layout__footer-copyright" style={{ textAlign: 'center', marginTop: '30px', color: '#bbb', fontSize: '12px' }}>
+                                © 2025 English AI. All rights reserved. @Copyright by Dang Anh Tuongg
+                            </div>
+                        </div>
+                    </footer>
+
                 </div>
             </div>
         </>
-    )
+    );
 }
+
 export default Layout;

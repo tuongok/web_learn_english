@@ -99,205 +99,156 @@
         }
     }
 
-// ... (Phần footer giữ nguyên)
+&__footer {
+    // 1. CHUYỂN SANG NỀN TRẮNG (GIỐNG PREP)
+    background-color: #ffffff; 
+    color: #333; // Chữ tối trên nền sáng
+    padding: 50px 0 20px;
+    text-align: left;
+    border-top: 4px solid #0075F3; // Thanh xanh dương làm "mồi" để rê chuột
 
-    &__footer {
-        // Đổi sang nền tối nhìn cho chuyên nghiệp và tách biệt với thân trang
-        background-color: var(--color-two, #05060F); 
-        color: #fff;
-        padding: 60px 0 20px;
-        text-align: left; // Reset lại text-align cũ
+    // 2. LOGIC THỤT THÒ (AUTO-HIDE)
+    position: fixed;   // Cố định dưới đáy
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    
+    // Mặc định ẩn 96% xuống dưới (chỉ chừa lại thanh xanh 4px)
+    transform: translateY(96%);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    // Bóng đổ nhẹ để tách biệt với nội dung trang trắng
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.08);
 
-        // Container giới hạn chiều rộng nội dung
-        &-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        // Logo trong footer
-        &-logo {
-            font-size: 30px;
-            font-weight: 800;
-            color: var(--color-one, #0075F3);
-            margin-bottom: 15px;
-        }
-
-        // Mô tả ngắn
-        &-desc {
-            color: #aaa;
-            font-size: 14px;
-            line-height: 1.6;
-            margin-bottom: 20px;
-            max-width: 300px;
-        }
-
-        // Tiêu đề các cột (Liên hệ, Liên kết...)
-        h4 {
-            font-size: 18px;
-            color: #fff;
-            margin-bottom: 20px;
-            font-weight: 600;
-            position: relative;
-            padding-bottom: 10px;
-
-            // Gạch chân nhỏ dưới tiêu đề
-            &::after {
-                content: '';
-                position: absolute;
-                left: 0;
-                bottom: 0;
-                width: 40px;
-                height: 3px;
-                background-color: var(--color-one, #0075F3);
-                border-radius: 2px;
-            }
-        }
-
-        // Danh sách liên kết
-        &-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-
-            li {
-                margin-bottom: 12px;
-            }
-
-            a {
-                color: #aaa;
-                text-decoration: none;
-                transition: 0.3s;
-                font-size: 15px;
-
-                &:hover {
-                    color: var(--color-one, #0075F3);
-                    padding-left: 5px; // Hiệu ứng chữ chạy sang phải
-                }
-            }
-        }
-
-        // Danh sách liên hệ
-        &-contact {
-            list-style: none;
-            padding: 0;
-
-            li {
-                display: flex;
-                align-items: flex-start;
-                gap: 10px;
-                margin-bottom: 15px;
-                color: #aaa;
-                font-size: 15px;
-                
-                // Chỉnh màu icon
-                span:first-child {
-                    color: var(--color-one, #0075F3);
-                    margin-top: 4px;
-                }
-            }
-        }
-
-        // Icon mạng xã hội
-        &-socials {
-            display: flex;
-            gap: 15px;
-            font-size: 24px;
-            cursor: pointer;
-
-            span {
-                transition: 0.3s;
-                color: #fff;
-                
-                &:hover {
-                    color: var(--color-one, #0075F3);
-                    transform: translateY(-3px);
-                }
-            }
-        }
-
-        // Dòng bản quyền dưới cùng
-        &-copyright {
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            margin-top: 40px;
-            padding-top: 20px;
-            text-align: center;
-            color: #666;
-            font-size: 14px;
-        }
+    // Khi rê chuột vào vùng thanh xanh, nó trồi lên
+    &:hover {
+        transform: translateY(0%);
     }
-    &__main{
-        
-        flex: 1;
-    }
-    &__login{
-        
-        a{
-            text-decoration: none;
-        color: black;
-        margin: 5px;
-        padding: 10px;
-        background-color: #24aefd;
-        border-radius: 10px;
-        
-        }
-        :hover{
-            color: white;
-        }
-    }
-}
 
-.home{
-    padding: 80px;
-    font-size: 19px;
-    &__text{
+    &-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    &-logo {
+        font-size: 28px;
+        font-weight: 800;
+        color: #0075F3;
+        margin-bottom: 10px;
+    }
+
+    &-desc {
+        color: #666;
+        font-size: 14px;
+        line-height: 1.6;
         margin-bottom: 20px;
+        max-width: 300px;
     }
-    &__desc{
+
+    // Tiêu đề các cột (CHƯƠNG TRÌNH HỌC, LIÊN HỆ...)
+    h4 {
+        font-size: 14px; // Nhỏ và đậm giống Prep
+        color: #000;
         margin-bottom: 20px;
-        font-size: 20px;
-        font-weight: 600;
-    }
-    &__title{
-        
-        padding:20px 80px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        position: relative;
         padding-bottom: 0;
 
-        a{
-            text-decoration: none;
-            color: black;
-            margin-right: 10px;
-            border: 1px solid black;
-            border-radius: 10px;
-            padding: 5px;
-            
-            
+        // Bỏ cái gạch chân cũ của bạn cho giống Prep (Prep dùng phong cách tối giản)
+        &::after {
+            display: none;
         }
-        a:hover{
-            background:#89B449 ;
-            border: 0;
-        }
-        hr{
-            margin-top: 40px;
+    }
+
+    // Danh sách liên kết
+    &-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+
+        li {
+            margin-bottom: 12px;
         }
 
+        a {
+            color: #595959;
+            text-decoration: none;
+            transition: 0.3s;
+            font-size: 14px;
+
+            &:hover {
+                color: #0075F3;
+                padding-left: 5px;
+            }
+        }
+    }
+
+    // Danh sách liên hệ
+    &-contact {
+        list-style: none;
+        padding: 0;
+
+        li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            color: #666;
+            font-size: 14px;
+            
+            span:first-child {
+                color: #0075F3;
+                font-size: 16px;
+            }
+        }
+    }
+
+    // Thông tin pháp lý (Phần dưới divider)
+    .footer-bottom {
+        h5 {
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #000;
+        }
+        p {
+            font-size: 12px;
+            color: #8c8c8c;
+            margin-bottom: 6px;
+        }
+    }
+
+    .footer-divider {
+        height: 1px;
+        background-color: #f0f0f0;
+        margin: 30px 0;
+    }
+
+    &-socials {
+        display: flex;
+        gap: 15px;
+        font-size: 22px;
+        
+        span {
+            color: #555;
+            &:hover {
+                color: #0075F3;
+                transform: translateY(-3px);
+            }
+        }
+    }
+
+    &-copyright {
+        border-top: 1px solid #f0f0f0;
+        margin-top: 30px;
+        padding-top: 20px;
+        text-align: center;
+        color: #bfbfbf;
+        font-size: 12px;
     }
 }
-button{
-    margin: 10px 0 10px 0;
-    padding: 5px;
-    font-size: 18px;
-    border-radius: 10px;
-    background: #89B449;
-    border: 0;
-   
-}
-button:hover{
-    color: white;
-    
-}
-.body{
-    height: 100%; 
-    margin: 0;
-    padding: 0;
 }

@@ -15,6 +15,9 @@ import UserAdmin from "../page/admin/UserAdmin";
 import TeacherModules from "../page/admin/TeacherModules"; 
 import ContextManager from "../page/admin/ContextManager"; 
 
+import OrderAdmin from "../page/admin/OrderAdmin";
+
+import Profile from "../page/profile";
 
 console.log("Check AdminLayout:", AdminLayout);
 console.log("Check UserAdmin:", UserAdmin);
@@ -43,10 +46,13 @@ export const routes = [
                        path: "mindmap", // Tra từ điển Mindmap (Theo FR-09)
                         element: <Mindmap />,
                     },
-                     // {
-                    //     path: "profile", // Hồ sơ người dùng
-                    //     element: <div>Trang hồ sơ (Profile)</div>, 
-                    // }
+                     
+                    {
+                        path: "profile",
+                            element: <Profile />,
+                    }
+                    
+                   
                 ]
             },
 
@@ -78,6 +84,8 @@ export const routes = [
                     
                     // Quản lý gói & chủ đề
                     { path: "context", element: <ContextManager /> },
+
+                    { path: "orders", element: <OrderAdmin /> },
                 ]
             }
         ]

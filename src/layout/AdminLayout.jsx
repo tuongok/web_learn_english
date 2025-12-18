@@ -2,10 +2,16 @@
 import React from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Button, theme, Avatar, Space, Typography, ConfigProvider } from 'antd';
+
+// --- SỬA LỖI: GỘP TẤT CẢ ICON VÀO 1 LẦN IMPORT DUY NHẤT ---
 import {
-  UserOutlined, VideoCameraOutlined,
-  UploadOutlined, LogoutOutlined,
-  MenuUnfoldOutlined, MenuFoldOutlined
+  UserOutlined, 
+  VideoCameraOutlined,
+  UploadOutlined, 
+  LogoutOutlined,
+  MenuUnfoldOutlined, 
+  MenuFoldOutlined,
+  ShoppingCartOutlined // Đã thêm icon giỏ hàng vào đây
 } from '@ant-design/icons';
 
 const { Header, Sider, Content } = Layout;
@@ -24,31 +30,25 @@ const AdminLayout = () => {
     if (path.includes('/admin/users')) return '1';
     if (path.includes('/admin/teacher-modules')) return '2';
     if (path.includes('/admin/context')) return '3';
+    if (path.includes('/admin/orders')) return '4';
     return '1';
   };
 
   return (
-    // PHẦN QUAN TRỌNG NHẤT: CẤU HÌNH MÀU SẮC TOÀN CỤC
+    // CẤU HÌNH MÀU SẮC TOÀN CỤC (Xanh Ngọc - Teal)
     <ConfigProvider
       theme={{
         token: {
-          
           colorPrimary: '#13c2c2', 
-          
-          
           borderRadius: 8, 
-          
-          
           colorBgLayout: '#f6ffed', 
         },
         components: {
             Layout: {
-                
                 siderBg: '#ffffff', 
                 triggerBg: '#13c2c2',
             },
             Menu: {
-                
                 itemSelectedBg: '#e6fffb',
                 itemSelectedColor: '#13c2c2',
             }
@@ -67,7 +67,6 @@ const AdminLayout = () => {
             }}
         >
           <div style={{ height: 64, margin: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid #f0f0f0' }}>
-             {/* Logo đổi màu theo theme */}
              <Title level={4} style={{ color: '#13c2c2', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden' }}>
                 {collapsed ? 'EA' : 'English AI'}
              </Title>
@@ -87,6 +86,9 @@ const AdminLayout = () => {
             </Menu.Item>
             <Menu.Item key="3" icon={<UploadOutlined />}>
               <Link to="/admin/context">Gói học & Topic</Link>
+            </Menu.Item>
+            <Menu.Item key="4" icon={<ShoppingCartOutlined />}>
+              <Link to="/admin/orders">Đơn hàng & Doanh thu</Link>
             </Menu.Item>
           </Menu>
         </Sider>
@@ -110,7 +112,6 @@ const AdminLayout = () => {
           </Header>
           
           <Content style={{ margin: '24px 16px', padding: 24, minHeight: 280, background: 'transparent' }}>
-             {/* Outlet hiển thị nội dung các trang con */}
              <Outlet />
           </Content>
         </Layout>
