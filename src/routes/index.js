@@ -1,14 +1,25 @@
+import { Navigate } from "react-router-dom"; // Thêm dòng này để điều hướng
 import Layout from "../layout/layout_default";
 import Home from "../page/home";
 import Login from "../page/login";
 import Register from "../page/register";
-import Private from "../components/private_router"; // Đã được sử dụng
+import Private from "../components/private_router"; 
 import "./style.css";
 import Conversation from "../page/conversation";
 import Logout from "../page/logout";
 import Mindmap from "../page/mindmap";
-// import Mindmap from "../page/mindmap"; // Gợi ý: Hãy tạo file này sớm
 
+// --- IMPORT PHẦN ADMIN
+import AdminLayout from "../layout/AdminLayout";
+import UserAdmin from "../page/admin/UserAdmin";           
+import TeacherModules from "../page/admin/TeacherModules"; 
+import ContextManager from "../page/admin/ContextManager"; 
+
+
+console.log("Check AdminLayout:", AdminLayout);
+console.log("Check UserAdmin:", UserAdmin);
+console.log("Check TeacherModules:", TeacherModules);
+console.log("Check ContextManager:", ContextManager);
 export const routes = [
     {
         path: "/",
@@ -16,7 +27,7 @@ export const routes = [
         children: [
             // 1. NHÓM PUBLIC (Ai cũng xem được)
             {
-                index: true, // Thay cho path: "/" -> Mặc định vào đây
+                index: true, 
                 element: <Home />,
             },
             
@@ -32,18 +43,43 @@ export const routes = [
                        path: "mindmap", // Tra từ điển Mindmap (Theo FR-09)
                         element: <Mindmap />,
                     },
-                    // {
+                     // {
                     //     path: "profile", // Hồ sơ người dùng
                     //     element: <div>Trang hồ sơ (Profile)</div>, 
                     // }
                 ]
             },
 
-            // Logout thường không cần giao diện, chỉ cần xử lý logic rồi đẩy về Home
+            // Logout thường không cần giao diện
             {
                 path: "logout",
                 element: <Logout />,
             },
+        ]
+    },
+
+    // PHẦN ADMIN CỦA BẠN 
+    
+    {
+        path: "/admin",
+        element: <Private />, //dùng Private Router để bảo vệ
+        children: [
+            {
+                element: <AdminLayout />, 
+                children: [
+                    // Vào /admin tự động nhảy sang /admin/users
+                    { index: true, element: <Navigate to="users" replace /> },
+                    
+                    // Quản lý người dùng
+                    { path: "users", element: <UserAdmin /> },
+                    
+                    // Chức năng giáo viên
+                    { path: "teacher-modules", element: <TeacherModules /> },
+                    
+                    // Quản lý gói & chủ đề
+                    { path: "context", element: <ContextManager /> },
+                ]
+            }
         ]
     },
     

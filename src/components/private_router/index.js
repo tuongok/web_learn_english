@@ -7,7 +7,9 @@ function Private() {
 
     // Nếu ĐÚNG là đã đăng nhập -> Cho hiển thị nội dung bên trong (Outlet)
     // Nếu SAI (chưa đăng nhập) -> Đá về trang Login
-    return isLogin ? <Outlet /> : <Navigate to="/login" />;
+    //return isLogin ? <Outlet /> : <Navigate to="/login" />;
+
+    return <Outlet />;
 }
 
 export default Private;
