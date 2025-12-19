@@ -3,7 +3,7 @@ import Layout from "../layout/layout_default";
 import Home from "../page/home";
 import Login from "../page/login";
 import Register from "../page/register";
-import Private from "../components/private_router"; 
+import Private from "../components/private_router";
 import "./style.css";
 import Conversation from "../page/conversation";
 import Logout from "../page/logout";
@@ -11,13 +11,14 @@ import Mindmap from "../page/mindmap";
 
 // --- IMPORT PHẦN ADMIN
 import AdminLayout from "../layout/AdminLayout";
-import UserAdmin from "../page/admin/UserAdmin";           
-import TeacherModules from "../page/admin/TeacherModules"; 
-import ContextManager from "../page/admin/ContextManager"; 
+import UserAdmin from "../page/admin/UserAdmin";
+import TeacherModules from "../page/admin/TeacherModules";
+import ContextManager from "../page/admin/ContextManager";
 
 import OrderAdmin from "../page/admin/OrderAdmin";
 
 import Profile from "../page/profile";
+import Chatbox from "../page/chatbox";
 
 console.log("Check AdminLayout:", AdminLayout);
 console.log("Check UserAdmin:", UserAdmin);
@@ -30,10 +31,10 @@ export const routes = [
         children: [
             // 1. NHÓM PUBLIC (Ai cũng xem được)
             {
-                index: true, 
+                index: true,
                 element: <Home />,
             },
-            
+
             // 2. NHÓM PRIVATE (Phải đăng nhập mới xem được)
             {
                 element: <Private />, // Bọc Private Router ở ngoài
@@ -43,16 +44,24 @@ export const routes = [
                         element: <Conversation />,
                     },
                     {
-                       path: "mindmap", // Tra từ điển Mindmap (Theo FR-09)
+                        path: "mindmap", // Tra từ điển Mindmap (Theo FR-09)
                         element: <Mindmap />,
                     },
-                     
+
                     {
                         path: "profile",
-                            element: <Profile />,
+                        element: <Profile />,
+                    }, {
+                        path: "chatbox",
+                        element: <Chatbox />,
+                    },
+                    {
+                        path: "payment",
+                        element: <div style={{ textAlign: 'center', padding: 50, fontSize: 24 }}>
+                            🚧 Trang thanh toán đang được phát triển bởi bạn của Tường!
+                        </div>,
                     }
-                    
-                   
+
                 ]
             },
 
@@ -65,23 +74,23 @@ export const routes = [
     },
 
     // PHẦN ADMIN CỦA BẠN 
-    
+
     {
         path: "/admin",
         element: <Private />, //dùng Private Router để bảo vệ
         children: [
             {
-                element: <AdminLayout />, 
+                element: <AdminLayout />,
                 children: [
                     // Vào /admin tự động nhảy sang /admin/users
                     { index: true, element: <Navigate to="users" replace /> },
-                    
+
                     // Quản lý người dùng
                     { path: "users", element: <UserAdmin /> },
-                    
+
                     // Chức năng giáo viên
                     { path: "teacher-modules", element: <TeacherModules /> },
-                    
+
                     // Quản lý gói & chủ đề
                     { path: "context", element: <ContextManager /> },
 
@@ -90,7 +99,7 @@ export const routes = [
             }
         ]
     },
-    
+
     // 3. NHÓM AUTH (Không có Header/Footer)
     {
         path: "login",
