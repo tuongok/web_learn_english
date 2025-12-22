@@ -8,14 +8,17 @@ import "./style.css";
 import Conversation from "../page/conversation";
 import Logout from "../page/logout";
 import Mindmap from "../page/mindmap";
-
+import PaymentPage from "../page/payment";
 // --- IMPORT PHẦN ADMIN
 import AdminLayout from "../layout/AdminLayout";
 import UserAdmin from "../page/admin/UserAdmin";
 import TeacherModules from "../page/admin/TeacherModules";
 import ContextManager from "../page/admin/ContextManager";
 
+
+
 import OrderAdmin from "../page/admin/OrderAdmin";
+import SetupPayment from '../page/admin/SetupPayment';
 
 import Profile from "../page/profile";
 import Chatbox from "../page/chatbox";
@@ -57,9 +60,7 @@ export const routes = [
                     },
                     {
                         path: "payment",
-                        element: <div style={{ textAlign: 'center', padding: 50, fontSize: 24 }}>
-                            🚧 Trang thanh toán đang được phát triển bởi bạn của Tường!
-                        </div>,
+                        element: <PaymentPage />,
                     }
 
                 ]
@@ -95,6 +96,8 @@ export const routes = [
                     { path: "context", element: <ContextManager /> },
 
                     { path: "orders", element: <OrderAdmin /> },
+
+                    { path: "setuppayment", element: <SetupPayment /> },
                 ]
             }
         ]

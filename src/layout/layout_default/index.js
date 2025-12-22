@@ -1,15 +1,15 @@
-// 1. THÊM useLocation VÀO ĐÂY
+import React from 'react';
+import { Row, Col, Avatar, Space, Dropdown, Button } from "antd"; 
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
-import { Row, Col, Avatar, Space, Dropdown, Button } from "antd";
-import {
-    FacebookFilled, YoutubeFilled, InstagramFilled,
-    MailOutlined, PhoneOutlined,
+import { 
+    FacebookFilled, YoutubeFilled, InstagramFilled, 
+    MailOutlined, PhoneOutlined, 
     LogoutOutlined, UserOutlined, DownOutlined,
-    SafetyCertificateFilled
+    SafetyCertificateFilled 
 } from '@ant-design/icons';
 
 import { useSelector, useDispatch } from 'react-redux';
-import { logout } from '../../redux/authSlice';
+import { logout } from '../../redux/authSlice'; 
 
 import './style.scss';
 
@@ -17,13 +17,14 @@ function Layout() {
     const { isLogin, user } = useSelector((state) => state.auth);
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    
-    // 2. LẤY THÔNG TIN ĐƯỜNG DẪN HIỆN TẠI
     const location = useLocation();
+    
+    // Logic: Chỉ hiện Footer ở trang chủ
+    const isHomePage = location.pathname === "/";
 
     const handleLogout = () => {
-        dispatch(logout());
-        navigate('/');
+        dispatch(logout()); 
+        navigate('/');      
     };
 
     const userMenu = [
@@ -41,7 +42,7 @@ function Layout() {
         {
             key: '3',
             label: (
-                <div onClick={handleLogout} style={{ color: 'red', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <div onClick={handleLogout} style={{color: 'red', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px'}}>
                     <LogoutOutlined /> Đăng xuất
                 </div>
             ),
@@ -51,64 +52,78 @@ function Layout() {
     return (
         <>
             <div className="body">
-                <div className="layout__default">
-
-                    {/* --- HEADER (Luôn hiển thị) --- */}
+                <div className="layout__default" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+            
+                    {/* --- HEADER --- */}
                     <header className="layout__header">
-                        {/* ... (Code Header giữ nguyên không đổi) ... */}
                         <div className="layout__header-container">
+                            
                             <div className="layout__logo">
                                 <NavLink to="/">English AI</NavLink>
                             </div>
+
                             <nav className="layout__menu">
                                 <ul>
                                     <li><NavLink to="/">Trang chủ</NavLink></li>
                                     <li><NavLink to="/conversation">Luyện hội thoại</NavLink></li>
-                                    {isLogin && (
-                                        <>
-                                            <li><NavLink to="/mindmap">Từ vựng</NavLink></li>
-                                            <li><NavLink to="/chatbox">Chat AI</NavLink></li>
-                                        </>
-                                    )}
+                                    {isLogin && <li><NavLink to="/mindmap">Từ vựng</NavLink></li>}
                                 </ul>
                             </nav>
+
                             <div className="layout__auth">
                                 {isLogin ? (
-                                    <Dropdown menu={{ items: userMenu }} placement="bottomRight">
-                                        <Space className="user-info" style={{ cursor: 'pointer' }}>
-                                            <Avatar src={user?.avatar} style={{ backgroundColor: '#0075F3' }} icon={<UserOutlined />} />
-                                            <span className="user-name">{user?.name || "Học viên"} <DownOutlined style={{ fontSize: '12px' }} /></span>
+                                    // --- [SỬA ĐỔI TẠI ĐÂY] ---
+                                    // Thêm trigger={['click']} để bấm mới hiện
+                                    <Dropdown 
+                                        menu={{ items: userMenu }} 
+                                        placement="bottomRight" 
+                                        trigger={['click']} 
+                                    >
+                                        <Space className="user-info" style={{cursor: 'pointer', userSelect: 'none'}}>
+                                            <Avatar 
+                                                src={user?.avatar} 
+                                                style={{ backgroundColor: '#0075F3' }} 
+                                                icon={<UserOutlined />} 
+                                            />
+                                            <span className="user-name">
+                                                {user?.name || "Học viên"} <DownOutlined style={{fontSize: '12px'}}/>
+                                            </span>
                                         </Space>
                                     </Dropdown>
                                 ) : (
                                     <div className="auth-buttons">
                                         <NavLink to="/login" className="link-login">Đăng nhập</NavLink>
-                                        <NavLink to="/register"><Button type="primary" shape="round" className="btn-register">Đăng ký miễn phí</Button></NavLink>
+                                        <NavLink to="/register">
+                                            <Button type="primary" shape="round" className="btn-register">
+                                                Đăng ký miễn phí
+                                            </Button>
+                                        </NavLink>
                                     </div>
                                 )}
                             </div>
+
                         </div>
                     </header>
+                    
+                    <div style={{ height: '80px' }}></div> 
 
-                    <div style={{ height: '80px' }}></div>
-
-                    {/* --- MAIN CONTENT --- */}
-                    <main className="layout__main">
+                    <main className="layout__main" style={{ flex: 1 }}>
                         <Outlet />
                     </main>
 
-                    {/* --- FOOTER (CHỈ HIỂN THỊ KHI Ở TRANG CHỦ) --- */}
-                    {/* 3. THÊM ĐIỀU KIỆN KIỂM TRA TẠI ĐÂY */}
-                    {location.pathname === '/' && (
-                        <footer className="layout__footer auto-hide">
+                    {/* --- FOOTER (Chỉ hiện ở Trang Chủ) --- */}
+                    {isHomePage && (
+                        <footer className="layout__footer"> 
                             <div className="layout__footer-container">
-                                {/* ... (Nội dung Footer giữ nguyên như cũ) ... */}
+                                
                                 <div className="footer-top">
                                     <Row gutter={[40, 40]}>
                                         <Col xs={24} sm={12} md={7}>
-                                            <div className="layout__footer-logo" style={{ color: '#0075F3', fontSize: '28px', fontWeight: 'bold', marginBottom: '15px' }}>English AI</div>
+                                            <div className="layout__footer-logo" style={{ color: '#0075F3', fontSize: '28px', fontWeight: 'bold', marginBottom: '15px' }}>
+                                                English AI
+                                            </div>
                                             <p style={{ color: '#666', fontSize: '14px', lineHeight: '1.6', marginBottom: '20px' }}>
-                                                Nền tảng học tiếng Anh trực tuyến ứng dụng công nghệ AI.
+                                                Nền tảng học tiếng Anh trực tuyến ứng dụng công nghệ AI, giúp học viên tối ưu hóa lộ trình và bứt phá kỹ năng giao tiếp.
                                             </p>
                                             <h4>KẾT NỐI VỚI CHÚNG TÔI</h4>
                                             <Space size="middle">
@@ -117,6 +132,7 @@ function Layout() {
                                                 <Button shape="circle" icon={<InstagramFilled />} />
                                             </Space>
                                         </Col>
+
                                         <Col xs={24} sm={12} md={5}>
                                             <h4>CHƯƠNG TRÌNH HỌC</h4>
                                             <ul className="footer-links">
@@ -126,6 +142,7 @@ function Layout() {
                                                 <li><NavLink to="#">Luyện phát âm chuẩn</NavLink></li>
                                             </ul>
                                         </Col>
+
                                         <Col xs={24} sm={12} md={6}>
                                             <h4>HỖ TRỢ KHÁCH HÀNG</h4>
                                             <ul className="footer-links">
@@ -135,6 +152,7 @@ function Layout() {
                                                 <li><NavLink to="#">Chính sách hoàn tiền</NavLink></li>
                                             </ul>
                                         </Col>
+
                                         <Col xs={24} sm={12} md={6}>
                                             <h4>VỀ CHÚNG TÔI</h4>
                                             <ul className="footer-links">
@@ -155,12 +173,12 @@ function Layout() {
                                             <h5>CÔNG TY CỔ PHẦN CÔNG NGHỆ GIÁO DỤC ENGLISH AI</h5>
                                             <p><strong>Mã số doanh nghiệp:</strong> 0123456789 do Sở Kế hoạch và Đầu tư TP.HCM cấp.</p>
                                             <p><strong>Địa chỉ:</strong> Tòa nhà English AI, Đặng Thùy Trâm, Phường 13, Quận Bình Thạnh, TP. Hồ Chí Minh.</p>
-                                            <p><strong>Đại diện pháp luật:</strong> Đặng Anh Tường.</p>
+                                            <p><strong>Đại diện pháp luật:</strong> Lê Trí Thiện</p>
                                         </Col>
                                         <Col xs={24} md={10}>
                                             <h5>TRUNG TÂM NGOẠI NGỮ ENGLISH AI</h5>
-                                            <p><PhoneOutlined /> <strong>Hotline:</strong> +84 942 217 271 (8:00 - 21:00)</p>
-                                            <p><MailOutlined /> <strong>Email:</strong> danganhtuongg@gmail.com</p>
+                                            <p><PhoneOutlined /> <strong>Hotline:</strong> +84 942334470 (8:00 - 21:00)</p>
+                                            <p><MailOutlined /> <strong>Email:</strong> letrithieng@gmail.com</p>
                                             <div className="cert-logos">
                                                 <Space size="large">
                                                     <div className="bct-logo" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -172,13 +190,13 @@ function Layout() {
                                         </Col>
                                     </Row>
                                 </div>
+                                
                                 <div className="layout__footer-copyright" style={{ textAlign: 'center', marginTop: '30px', color: '#bbb', fontSize: '12px' }}>
-                                    © 2025 English AI. All rights reserved. @Copyright by Dang Anh Tuongg
+                                    © 2025 English AI. All rights reserved. @Copyright by Team
                                 </div>
                             </div>
                         </footer>
                     )}
-                    {/* KẾT THÚC ĐIỀU KIỆN KIỂM TRA */}
 
                 </div>
             </div>

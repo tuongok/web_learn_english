@@ -15,7 +15,7 @@ function Login() {
     // Logic giả lập đăng nhập
     if (values.username && values.password) {
       const fakeUser = {
-        name: 'Tường Đặng', // Tên giả
+        name: 'Lê Trí Thiện', // Tên giả
         email: values.username,
         avatar: loginImg,
         role: 'user'

@@ -1,8 +1,12 @@
 import { createSlice } from '@reduxjs/toolkit';
 
+// 1. Tối ưu: Lấy dữ liệu ngay khi khởi tạo để F5 không bị mất login
+const userFromStorage = localStorage.getItem('user');
+const userParsed = userFromStorage ? JSON.parse(userFromStorage) : null;
+
 const initialState = {
-  isLogin: false,
-  user: null,
+  isLogin: !!userParsed, // true nếu có user, false nếu null
+  user: userParsed,
 };
 
 const authSlice = createSlice({
@@ -19,16 +23,24 @@ const authSlice = createSlice({
       state.user = null;
       localStorage.removeItem('user');
     },
-    // Hàm này để giữ trạng thái đăng nhập khi F5
     checkAuth: (state) => {
       const user = localStorage.getItem('user');
       if (user) {
         state.isLogin = true;
         state.user = JSON.parse(user);
       }
+    },
+    // --- BỔ SUNG HÀM updateUser ---
+    updateUser: (state, action) => {
+      // Gộp thông tin cũ (email, id...) với thông tin mới (avatar, name...)
+      state.user = { ...state.user, ...action.payload };
+      // Lưu lại vào LocalStorage để F5 vẫn giữ thông tin mới
+      localStorage.setItem('user', JSON.stringify(state.user));
     }
   },
 });
 
-export const { login, logout, checkAuth } = authSlice.actions;
+// --- QUAN TRỌNG: PHẢI CÓ 'updateUser' Ở DÒNG DƯỚI NÀY THÌ PROFILE MỚI DÙNG ĐƯỢC ---
+export const { login, logout, checkAuth, updateUser } = authSlice.actions;
+
 export default authSlice.reducer;

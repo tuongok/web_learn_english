@@ -5,15 +5,14 @@ import {
 } from 'antd';
 import { 
   UserOutlined, EyeOutlined, CheckOutlined, StopOutlined, 
-  ReloadOutlined, KeyOutlined, DeleteOutlined, PlusOutlined, 
-  HistoryOutlined, BookOutlined, SolutionOutlined 
+  KeyOutlined, DeleteOutlined, PlusOutlined, 
+  HistoryOutlined, BookOutlined 
 } from '@ant-design/icons';
 
 const { Option } = Select;
 
-const UserAdmin = () => {
-  // --- DỮ LIỆU GIẢ LẬP ---
-  const [users, setUsers] = useState([
+// --- DỮ LIỆU MẪU (Dùng khi chưa có trong LocalStorage) ---
+const DEFAULT_USERS = [
     { 
       key: 'GV001', name: 'Thầy John', role: 'teacher', email: 'john@school.com', status: 'active', 
       phone: '0909876543', workUnit: 'Trung tâm Anh ngữ A', createdTopics: ['Travel', 'Business'], createdConvos: ['At the Airport']
@@ -27,9 +26,16 @@ const UserAdmin = () => {
       key: 'GV002', name: 'Cô Lan (Mới)', role: 'teacher', email: 'lan@school.com', status: 'pending', 
       phone: '0912345678', workUnit: 'Đại học Sư Phạm', createdTopics: [], createdConvos: [] 
     },
-  ]);
+];
 
-  // STATES 
+const UserAdmin = () => {
+  // --- 1. STATE DỮ LIỆU (KHỞI TẠO TỪ LOCAL STORAGE) ---
+  const [users, setUsers] = useState(() => {
+      const saved = localStorage.getItem('admin_users');
+      return saved ? JSON.parse(saved) : DEFAULT_USERS;
+  });
+
+  // STATES UI
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isPassOpen, setIsPassOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -38,7 +44,6 @@ const UserAdmin = () => {
   const [formPass] = Form.useForm();
   const [formUser] = Form.useForm();
 
-  
   const roleMap = {
       teacher: 'Giáo viên',
       learner: 'Học viên',
@@ -49,6 +54,11 @@ const UserAdmin = () => {
       active: 'Hoạt động',
       pending: 'Chờ duyệt',
       inactive: 'Vô hiệu hóa'
+  };
+
+  // HÀM LƯU LOCAL STORAGE
+  const saveToStorage = (data) => {
+      localStorage.setItem('admin_users', JSON.stringify(data));
   };
 
   // HÀM SINH MÃ TỰ ĐỘNG 
@@ -66,44 +76,58 @@ const UserAdmin = () => {
       return `${prefix}${String(maxId + 1).padStart(3, '0')}`;
   };
 
-  //CÁC HÀM XỬ LÝ 
+  // --- CÁC HÀM XỬ LÝ LOGIC ---
 
   const handleDelete = (key) => {
-    setUsers(users.filter(u => u.key !== key));
+    const newData = users.filter(u => u.key !== key);
+    setUsers(newData);
+    saveToStorage(newData); // Lưu ngay
     message.success('Đã xóa người dùng thành công');
   };
 
   const handleToggleStatus = (record) => {
     const newStatus = record.status === 'active' ? 'inactive' : 'active';
     const newData = users.map(u => u.key === record.key ? { ...u, status: newStatus } : u);
+    
     setUsers(newData);
+    saveToStorage(newData); // Lưu ngay
     
     message.info(`Đã cập nhật trạng thái thành: ${newStatus === 'active' ? 'Hoạt động' : 'Vô hiệu hóa'}`);
   };
 
   const handleChangePassword = (values) => {
+    // Lưu ý: Thực tế không lưu password vào localStorage vì bảo mật.
+    // Ở đây chỉ mô phỏng thao tác thành công.
     message.success(`Đã cập nhật mật khẩu cho ${selectedUser.name}`);
     setIsPassOpen(false);
     formPass.resetFields();
   };
 
   const handleSaveUser = (values) => {
+    let newData;
+
     if (selectedUser) {
-        const newData = users.map(u => u.key === selectedUser.key ? {...u, ...values} : u);
-        setUsers(newData);
+        // Cập nhật
+        newData = users.map(u => u.key === selectedUser.key ? {...u, ...values} : u);
         message.success('Cập nhật thông tin thành công');
     } else {
+        // Thêm mới
         const newId = generateId(values.role); 
         const newUser = { 
             ...values, 
             key: newId, 
             status: 'active', 
-            workUnit: 'Chưa cập nhật', createdTopics: [], createdConvos: [],
+            // Các trường mặc định cho user mới
+            workUnit: values.workUnit || 'Chưa cập nhật', 
+            createdTopics: [], createdConvos: [],
             level: 'A1', currentPackage: 'Chưa có', purchaseHistory: [], learnedHistory: []
         };
-        setUsers([...users, newUser]);
+        newData = [...users, newUser];
         message.success(`Thêm thành công người dùng mới: ${newId}`);
     }
+
+    setUsers(newData);
+    saveToStorage(newData); // Lưu ngay
     setIsEditModalOpen(false);
     formUser.resetFields();
   };
@@ -156,12 +180,10 @@ const UserAdmin = () => {
     { title: 'Email', dataIndex: 'email', key: 'email', responsive: ['md'] },
     { 
         title: 'Vai trò', dataIndex: 'role', 
-       
         render: role => <Tag color={role === 'teacher' ? 'blue' : (role==='admin'?'red':'green')}>{roleMap[role]}</Tag> 
     },
     { 
         title: 'Trạng thái', dataIndex: 'status', 
-        
         render: s => <Tag color={s === 'active' ? 'success' : (s === 'pending' ? 'orange' : 'red')}>{statusMap[s]}</Tag> 
     },
     {
@@ -186,7 +208,7 @@ const UserAdmin = () => {
   return (
     <Card 
         title="Quản trị Người dùng" 
-        extra={<Button type="primary" icon={<PlusOutlined />} onClick={() => { setSelectedUser(null); setIsEditModalOpen(true); }}>Thêm người dùng</Button>}
+        extra={<Button type="primary" icon={<PlusOutlined />} onClick={() => { setSelectedUser(null); setIsEditModalOpen(true); formUser.resetFields(); }}>Thêm người dùng</Button>}
         bordered={false}
     >
       <Table dataSource={users} columns={columns} pagination={{ pageSize: 5 }} />
@@ -205,10 +227,18 @@ const UserAdmin = () => {
         okText="Lưu"
         cancelText="Hủy"
       >
-          <Form form={formUser} layout="vertical" onFinish={handleSaveUser} initialValues={selectedUser}>
+          <Form form={formUser} layout="vertical" onFinish={handleSaveUser}>
+              {/* Khi sửa thì load dữ liệu vào, khi thêm mới thì clear */}
+              {selectedUser && (
+                <div style={{marginBottom: 16, fontWeight: 'bold', color: '#1890ff'}}>
+                    Đang chỉnh sửa: {selectedUser.key}
+                </div>
+              )}
+              
               <Form.Item 
                 name="name" 
                 label="Họ tên" 
+                initialValue={selectedUser?.name}
                 rules={[{required: true, message: 'Vui lòng nhập họ tên!'}]}
               >
                   <Input placeholder="Nhập họ tên" />
@@ -217,6 +247,7 @@ const UserAdmin = () => {
               <Form.Item 
                 name="email" 
                 label="Email" 
+                initialValue={selectedUser?.email}
                 rules={[
                     {required: true, message: 'Vui lòng nhập email!'},
                     {type: 'email', message: 'Email không hợp lệ!'}
@@ -225,25 +256,31 @@ const UserAdmin = () => {
                   <Input placeholder="Nhập email" />
               </Form.Item>
 
-              <Form.Item name="phone" label="Số điện thoại"><Input placeholder="Nhập số điện thoại" /></Form.Item>
+              <Form.Item name="phone" label="Số điện thoại" initialValue={selectedUser?.phone}>
+                  <Input placeholder="Nhập số điện thoại" />
+              </Form.Item>
 
               <Form.Item 
                 name="role" 
                 label="Phân quyền" 
+                initialValue={selectedUser?.role}
                 rules={[{required: true, message: 'Vui lòng chọn vai trò!'}]}
               >
-                  <Select placeholder="Chọn vai trò">
+                  <Select placeholder="Chọn vai trò" disabled={!!selectedUser}> 
+                      {/* Có thể disable không cho sửa quyền nếu muốn */}
                       <Option value="learner">Học viên</Option>
                       <Option value="teacher">Giáo viên</Option>
                       <Option value="admin">Quản trị viên</Option>
                   </Select>
               </Form.Item>
 
+              {/* Render có điều kiện: Nếu chọn giáo viên mới hiện ô nhập đơn vị công tác */}
               <Form.Item noStyle shouldUpdate={(prev, current) => prev.role !== current.role}>
                   {({ getFieldValue }) => getFieldValue('role') === 'teacher' && (
                       <Form.Item 
                         name="workUnit" 
                         label="Đơn vị công tác"
+                        initialValue={selectedUser?.workUnit}
                         rules={[{required: true, message: 'Vui lòng nhập đơn vị công tác!'}]}
                       >
                           <Input placeholder="Nhập nơi làm việc" />

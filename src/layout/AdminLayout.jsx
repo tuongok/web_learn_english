@@ -3,7 +3,6 @@ import React from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Button, theme, Avatar, Space, Typography, ConfigProvider } from 'antd';
 
-// --- SỬA LỖI: GỘP TẤT CẢ ICON VÀO 1 LẦN IMPORT DUY NHẤT ---
 import {
   UserOutlined, 
   VideoCameraOutlined,
@@ -11,7 +10,8 @@ import {
   LogoutOutlined,
   MenuUnfoldOutlined, 
   MenuFoldOutlined,
-  ShoppingCartOutlined // Đã thêm icon giỏ hàng vào đây
+  ShoppingCartOutlined,
+  BankOutlined // <--- 1. THÊM ICON NGÂN HÀNG
 } from '@ant-design/icons';
 
 const { Header, Sider, Content } = Layout;
@@ -25,17 +25,18 @@ const AdminLayout = () => {
     token: { colorBgContainer },
   } = theme.useToken();
 
+  // --- 2. CẬP NHẬT LOGIC ACTIVE MENU ---
   const getSelectedKey = () => {
     const path = location.pathname;
     if (path.includes('/admin/users')) return '1';
     if (path.includes('/admin/teacher-modules')) return '2';
     if (path.includes('/admin/context')) return '3';
     if (path.includes('/admin/orders')) return '4';
+    if (path.includes('/admin/setuppayment')) return '5'; // Active khi vào trang setup
     return '1';
   };
 
   return (
-    // CẤU HÌNH MÀU SẮC TOÀN CỤC (Xanh Ngọc - Teal)
     <ConfigProvider
       theme={{
         token: {
@@ -81,15 +82,24 @@ const AdminLayout = () => {
             <Menu.Item key="1" icon={<UserOutlined />}>
               <Link to="/admin/users">Quản lý User</Link>
             </Menu.Item>
+            
             <Menu.Item key="2" icon={<VideoCameraOutlined />}>
               <Link to="/admin/teacher-modules">Giáo viên & Bài học</Link>
             </Menu.Item>
+            
             <Menu.Item key="3" icon={<UploadOutlined />}>
               <Link to="/admin/context">Gói học & Topic</Link>
             </Menu.Item>
+            
             <Menu.Item key="4" icon={<ShoppingCartOutlined />}>
               <Link to="/admin/orders">Đơn hàng & Doanh thu</Link>
             </Menu.Item>
+
+            {/* --- 3. THÊM MENU ITEM MỚI Ở ĐÂY --- */}
+            <Menu.Item key="5" icon={<BankOutlined />}>
+              <Link to="/admin/setuppayment">Cấu hình Thanh toán</Link>
+            </Menu.Item>
+
           </Menu>
         </Sider>
 

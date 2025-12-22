@@ -8,8 +8,8 @@ import {
     GlobalOutlined, HeartOutlined, ReadOutlined, RightOutlined,
     RiseOutlined, RobotOutlined, ShopOutlined, StarFilled
 } from '@ant-design/icons';
-import s1 from "../../img/nentienganh.jpg";
-import "./style.css";
+import s1 from "../../img/nentienganh.jpg"; // Đảm bảo đường dẫn ảnh đúng
+import "./style.css"; // Đảm bảo file css tồn tại
 
 // Dữ liệu gói cước (Pricing)
 const PACKAGES = [
@@ -45,13 +45,31 @@ const PACKAGES = [
 function Home() {
     const navigate = useNavigate();
 
-    const handleRegister = () => {
-        navigate('/payment'); // Chuyển hướng thanh toán
+    // --- [SỬA LỖI TẠI ĐÂY] ---
+    const handleRegister = (pkg) => {
+        // 1. Xử lý giá tiền: "199.000đ" -> 199000
+        const rawPrice = parseInt(pkg.price.toString().replace(/\./g, '').replace('đ', ''));
+        
+        // 2. Xử lý thời hạn: "/ 3 tháng" -> 3
+        const durationMatch = pkg.duration.match(/\d+/);
+        const durationNum = durationMatch ? parseInt(durationMatch[0]) : 1;
+
+        // 3. Chuyển hướng và gửi state đúng cấu trúc 'selectedPackage'
+        navigate('/payment', { 
+            state: { 
+                selectedPackage: {   // <--- QUAN TRỌNG: Phải bọc trong 'selectedPackage'
+                    id: pkg.id,
+                    name: pkg.name, 
+                    price: rawPrice, 
+                    duration: durationNum 
+                }
+            } 
+        });
     };
 
     return (
         <>
-            {/* 1. HERO SECTION: Ấn tượng đầu tiên */}
+            {/* 1. HERO SECTION */}
             <div className="section1">
                 <div className="container">
                     <Row justify="space-between" align="middle" gutter={[40, 40]}>
@@ -83,7 +101,7 @@ function Home() {
                 </div>
             </div>
 
-            {/* 2. FEATURES SECTION: Giới thiệu công cụ AI (Lý do chọn) */}
+            {/* 2. FEATURES SECTION */}
             <div className="section2">
                 <div className="container">
                     <div className="section-title">
@@ -125,7 +143,7 @@ function Home() {
                 </div>
             </div>
 
-            {/* 3. TOPICS SECTION: Nội dung phong phú (Sự đa dạng) */}
+            {/* 3. TOPICS SECTION */}
             <div className="section3">
                 <div className="container">
                     <div className="section-title">
@@ -160,7 +178,7 @@ function Home() {
                 </div>
             </div>
 
-            {/* 4. TEST BANNER: Điều hướng cho người mới (Giúp người dùng chọn hướng đi) */}
+            {/* 4. TEST BANNER */}
             <div className="section-test">
                 <div className="container">
                     <div className="test-banner">
@@ -193,7 +211,7 @@ function Home() {
                 </div>
             </div>
 
-            {/* 5. PRICING SECTION: Chốt sale (Quan trọng để kiếm tiền) */}
+            {/* 5. PRICING SECTION */}
             <div className="home-pricing-section">
                 <div className="container">
                     <h2 className="pricing-title">Chọn lộ trình thành công</h2>
@@ -201,7 +219,7 @@ function Home() {
 
                     <div className="pricing-container">
                         {PACKAGES.map((pkg) => (
-                            <div key={pkg.id} className="pricing-card" onClick={handleRegister}>
+                            <div key={pkg.id} className="pricing-card" onClick={() => handleRegister(pkg)}>
                                 <div className={`card-header ${pkg.type}`}>
                                     {pkg.name}
                                 </div>
@@ -227,7 +245,7 @@ function Home() {
                 </div>
             </div>
 
-            {/* 6. CTA FINAL: Cơ hội cuối cùng */}
+            {/* 6. CTA FINAL */}
             <div className="section4-cta">
                 <div className="container">
                     <Row justify="center" align="middle">

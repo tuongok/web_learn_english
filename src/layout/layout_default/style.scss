@@ -105,26 +105,15 @@
     color: #333; // Chữ tối trên nền sáng
     padding: 50px 0 20px;
     text-align: left;
-    border-top: 4px solid #0075F3; // Thanh xanh dương làm "mồi" để rê chuột
+    border-top: 4px solid #0075F3; // Thanh xanh dương làm điểm nhấn trên cùng
 
-    // 2. LOGIC THỤT THÒ (AUTO-HIDE)
-    position: fixed;   // Cố định dưới đáy
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    z-index: 1000;
-    
-    // Mặc định ẩn 96% xuống dưới (chỉ chừa lại thanh xanh 4px)
-    transform: translateY(96%);
-    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    
-    // Bóng đổ nhẹ để tách biệt với nội dung trang trắng
-    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.08);
-
-    // Khi rê chuột vào vùng thanh xanh, nó trồi lên
-    &:hover {
-        transform: translateY(0%);
-    }
+    // Xóa các thuộc tính ẩn/hiện cũ
+    position: relative !important; 
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+    display: block !important;
+    transition: none; 
 
     &-container {
         max-width: 1200px;
@@ -158,14 +147,14 @@
         position: relative;
         padding-bottom: 0;
 
-        // Bỏ cái gạch chân cũ của bạn cho giống Prep (Prep dùng phong cách tối giản)
+        // Bỏ cái gạch chân cũ 
         &::after {
             display: none;
         }
     }
 
     // Danh sách liên kết
-    &-list {
+    .footer-links {
         list-style: none;
         padding: 0;
         margin: 0;
@@ -219,6 +208,8 @@
             font-size: 12px;
             color: #8c8c8c;
             margin-bottom: 6px;
+            
+            strong { color: #555; }
         }
     }
 
@@ -242,6 +233,17 @@
         }
     }
 
+    // Logo Bộ công thương
+    .cert-logos {
+        margin-top: 15px;
+        .bct-logo {
+            border: 1px solid #ddd;
+            padding: 5px 10px;
+            border-radius: 4px;
+            background: #fff;
+        }
+    }
+
     &-copyright {
         border-top: 1px solid #f0f0f0;
         margin-top: 30px;
@@ -250,5 +252,4 @@
         color: #bfbfbf;
         font-size: 12px;
     }
-}
-}
+}}

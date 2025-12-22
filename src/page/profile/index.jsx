@@ -1,23 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux'; // Import Redux
-import { logout } from '../../redux/authSlice'; // Import action logout
-
+import myAvatar from '../../img/avt.jpg'; // Đảm bảo đường dẫn ảnh đúng
 import {
   Card, Row, Col, Avatar, Typography, Tabs, Button, Tag,
-  List, Progress, Divider, Timeline, Form, Input, Upload, message, Statistic, Space, Badge, Tooltip, Modal, Table, DatePicker, Select
+  List, Progress, Divider, Timeline, Form, Input, Upload, message, Statistic, Space, Badge, Tooltip, Modal, Table, DatePicker
 } from 'antd';
 import {
   UserOutlined, UploadOutlined, SafetyCertificateOutlined,
   HistoryOutlined, WalletOutlined, EditOutlined,
   CheckCircleOutlined, ClockCircleOutlined, CrownOutlined,
-  LogoutOutlined, MailOutlined, PhoneOutlined, LockOutlined, CreditCardOutlined,
-  CalendarOutlined, HomeOutlined, ArrowLeftOutlined 
+  LogoutOutlined, MailOutlined, PhoneOutlined, LockOutlined, RightOutlined,
+  CalendarOutlined, ArrowLeftOutlined, UnorderedListOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+
+// --- IMPORT REDUX ---
+import { useSelector, useDispatch } from 'react-redux';
+import { updateUser, logout } from '../../redux/authSlice'; // Chỉnh đường dẫn đúng tới file slice của bạn
+
+dayjs.extend(customParseFormat);
 
 const { Title, Text, Paragraph } = Typography;
-const { Option } = Select;
 
 const customStyles = {
     cardShadow: {
@@ -26,67 +30,124 @@ const customStyles = {
         border: 'none',
         overflow: 'hidden'
     },
-    primaryColor: '#0075F3', // Đổi màu xanh cho đồng bộ với Header
+    primaryColor: '#13c2c2',
 };
 
 const Profile = () => {
   const [form] = Form.useForm();
   const [passwordForm] = Form.useForm();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-
-  // 1. LẤY DỮ LIỆU TỪ REDUX
-  const reduxUser = useSelector((state) => state.auth.user);
   
-  // State Modal
-  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  // HOOKS REDUX
+  const dispatch = useDispatch();
+  const { user: userRedux } = useSelector((state) => state.auth);
 
-  // State User (Kết hợp dữ liệu từ Redux và dữ liệu giả lập cho phần chưa có)
+  // STATE MODAL 
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [isRenewModalOpen, setIsRenewModalOpen] = useState(false);
+  const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
+
+  // --- 1. DỮ LIỆU CÁC GÓI CƯỚC ---
+  const pricingPackages = [
+    { id: 1, name: 'Gói 1 Tháng', price: '199.000đ', value: 199000, duration: 30, desc: 'Thích hợp để trải nghiệm.', color: '#597ef7', isPopular: false },
+    { id: 2, name: 'Gói 3 Tháng', price: '499.000đ', value: 499000, duration: 90, desc: 'Tiết kiệm 15%.', color: '#13c2c2', isPopular: true },
+    { id: 3, name: 'Gói 6 tháng', price: '899.000đ', value: 899000, duration: 180, desc: 'Tiết kiệm 40%.', color: '#faad14', isPopular: false }
+  ];
+
+  // --- 2. LOGIC TÍNH TOÁN NGÀY HẾT HẠN (CỘNG DỒN) ---
+  const calculateSubscription = (history) => {
+      const sortedHistory = [...history].reverse(); // Đảo ngược để tính từ cũ -> mới
+      
+      let expiryDate = dayjs(); 
+      let hasActiveSub = false;
+
+      sortedHistory.forEach(transaction => {
+          // Lưu ý: Code Payment của bạn lưu status là 'pending' ban đầu, sau đó mới set thành công.
+          // Ở đây ta giả định chỉ tính các giao dịch đã thành công hoặc pending (tùy logic bạn muốn)
+          if (transaction.status === 'success' || transaction.status === 'paid') {
+              hasActiveSub = true;
+              
+              let daysToAdd = 30;
+              if (transaction.pkg?.includes('3 Tháng') || transaction.package?.includes('3 Tháng')) daysToAdd = 90;
+              if (transaction.pkg?.includes('6 tháng') || transaction.package?.includes('6 tháng')) daysToAdd = 180;
+
+              // Parse ngày giao dịch (Hỗ trợ cả format HH:mm DD/MM/YYYY và YYYY-MM-DD)
+              let transDate = dayjs(transaction.date, 'HH:mm DD/MM/YYYY');
+              if (!transDate.isValid()) transDate = dayjs(transaction.date);
+
+              if (expiryDate.isBefore(transDate)) {
+                  expiryDate = transDate.add(daysToAdd, 'day');
+              } else {
+                  expiryDate = expiryDate.add(daysToAdd, 'day');
+              }
+          }
+      });
+
+      const now = dayjs();
+      const daysLeft = expiryDate.diff(now, 'day');
+      const status = daysLeft > 0 ? 'active' : 'expired';
+
+      return {
+          plan: hasActiveSub ? 'Premium Member' : 'Free Member',
+          status: status,
+          startDate: sortedHistory.length > 0 ? sortedHistory[0].date : dayjs().format('DD/MM/YYYY'),
+          endDate: expiryDate.format('DD/MM/YYYY'),
+          daysLeft: daysLeft > 0 ? daysLeft : 0
+      };
+  };
+
+  // --- 3. LẤY DATA GIAO DỊCH TỪ LOCALSTORAGE ---
+  // Lấy từ kho 'transaction_history' (Kho chung với Admin) hoặc 'paymentHistory' (Kho riêng user nếu bạn dùng code cũ)
+  // Tốt nhất nên dùng chung 1 kho 'transaction_history' như đã sửa ở các bước trước
+  const storedHistory = JSON.parse(localStorage.getItem('transaction_history') || localStorage.getItem('paymentHistory') || '[]');
+  
+  // Dữ liệu mẫu ban đầu để demo nếu chưa có gì
+  const initialPurchaseHistory = storedHistory.length > 0 ? [] : [
+      { pkg: 'Gói 1 Tháng', date: '14:30 01/12/2024', amount: '199.000đ', status: 'success' },
+  ];
+  const finalPurchaseHistory = [...storedHistory, ...initialPurchaseHistory];
+  
+  const subInfo = calculateSubscription(finalPurchaseHistory);
+
+  // --- 4. STATE USER (Kết hợp Redux + Local Data) ---
   const [user, setUser] = useState({
-    name: reduxUser?.name || 'Người dùng',
-    email: reduxUser?.email || 'email@example.com',
-    phone: reduxUser?.phone || 'Chưa cập nhật',
-    avatar: reduxUser?.avatar || '',
-    dob: dayjs('2000-01-01'),
+    // Lấy thông tin định danh từ Redux để đồng bộ Header
+    name: userRedux?.name || 'Lê Trí Thiện',
+    email: userRedux?.email || 'letrithieng@gmail.com',
+    phone: userRedux?.phone || '0942334470',
+    avatar: userRedux?.avatar || myAvatar,
+    
+    // Các thông tin cục bộ chỉ dùng ở trang này
+    dob: userRedux?.dob ? dayjs(userRedux.dob) : dayjs('2000-01-01'),
     gender: 'male',
-    address: 'Chưa cập nhật',
-    level: 'A1 (Sơ cấp)',
-    levelProgress: 30,
+    address: 'Bình Thạnh, TP. Hồ Chí Minh',
+    joinDate: '20/12/2023',
     lastLogin: dayjs().format('HH:mm DD/MM/YYYY'),
-    subscription: {
-        plan: 'Miễn phí (Free)',
-        status: 'active',
-        startDate: dayjs().format('DD/MM/YYYY'),
-        endDate: 'Vô thời hạn',
-        daysLeft: '∞'
-    },
+    level: 'B1 (Trung cấp)',
+    levelProgress: 65,
+    subscription: subInfo, 
     learnedHistory: [
         { title: 'Check-in at Hotel', topic: 'Travel', score: 9, date: '15/02/2025', status: 'finish' },
+        { title: 'Job Interview Basic', topic: 'Work', score: 8.5, date: '10/02/2025', status: 'finish' },
         { title: 'Ordering Coffee', topic: 'Daily Life', score: null, date: '05/02/2025', status: 'process' },
     ],
-    purchaseHistory: []
+    purchaseHistory: finalPurchaseHistory
   });
 
-  // Cập nhật lại state khi Redux thay đổi
+  // Effect để cập nhật lại state nếu Redux thay đổi (Ví dụ login từ nơi khác)
   useEffect(() => {
-      if (reduxUser) {
+      if (userRedux) {
           setUser(prev => ({
               ...prev,
-              name: reduxUser.name,
-              email: reduxUser.email,
-              avatar: reduxUser.avatar,
-              phone: reduxUser.phone || prev.phone
+              name: userRedux.name || prev.name,
+              avatar: userRedux.avatar || prev.avatar,
+              email: userRedux.email || prev.email,
+              phone: userRedux.phone || prev.phone
           }));
-          form.setFieldsValue({
-              name: reduxUser.name,
-              email: reduxUser.email,
-              phone: reduxUser.phone
-          });
       }
-  }, [reduxUser, form]);
+  }, [userRedux]);
 
-  const fullHistoryData = [...user.learnedHistory];
-
+  // --- CÁC CỘT BẢNG ---
   const historyColumns = [
       { title: 'Bài học', dataIndex: 'title', key: 'title', render: t => <span style={{fontWeight: 500}}>{t}</span> },
       { title: 'Chủ đề', dataIndex: 'topic', key: 'topic', render: t => <Tag color="blue">{t}</Tag> },
@@ -95,11 +156,23 @@ const Profile = () => {
       { title: 'Trạng thái', dataIndex: 'status', key: 'status', render: s => s === 'finish' ? <Badge status="success" text="Hoàn thành" /> : <Badge status="processing" text="Đang học" /> }
   ];
 
-  // --- HÀM XỬ LÝ ---
+  const transactionColumns = [
+    { title: 'Gói cước', dataIndex: 'pkg', key: 'pkg', render: (t, r) => <Text strong>{t || r.package}</Text> }, // Hỗ trợ cả trường 'pkg' và 'package'
+    { title: 'Thời gian', dataIndex: 'date', key: 'date' },
+    { title: 'Số tiền', dataIndex: 'amount', key: 'amount', align: 'right', render: (t, r) => <Text type="danger">{t || (r.price ? r.price.toLocaleString() + 'đ' : '0đ')}</Text> },
+    { title: 'Trạng thái', dataIndex: 'status', key: 'status', align: 'center', render: s => <Tag color={s === 'success' || s === 'paid' ? 'green' : (s === 'pending' ? 'orange' : 'red')}>{s === 'success' || s === 'paid' ? 'Thành công' : (s === 'pending' ? 'Chờ duyệt' : 'Thất bại')}</Tag> }
+  ];
+
+  // --- HÀM XỬ LÝ SỰ KIỆN ---
+  
   const handleUpdateInfo = (values) => {
-    const updatedUser = { ...user, ...values };
-    setUser(updatedUser);
-    message.success('Cập nhật hồ sơ thành công (Giả lập)!');
+    // 1. Cập nhật Local State
+    setUser(prev => ({ ...prev, ...values }));
+    
+    // 2. Cập nhật Redux (Quan trọng để Header đổi theo)
+    dispatch(updateUser(values));
+    
+    message.success('Cập nhật hồ sơ thành công!');
   };
 
   const handleChangePass = () => {
@@ -110,7 +183,7 @@ const Profile = () => {
   };
 
   const handleLogout = () => {
-      dispatch(logout()); // Gọi Redux Logout
+      dispatch(logout()); // Gọi action logout của Redux
       navigate('/login');
   };
 
@@ -118,25 +191,42 @@ const Profile = () => {
       const file = info.file;
       const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/jpg';
       if (!isJpgOrPng) {
-          message.error('Bạn chỉ có thể tải lên file ảnh (JPG/PNG)!');
+          message.error('Bạn chỉ có thể tải lên file ảnh!');
           return Upload.LIST_IGNORE;
       }
+
       const reader = new FileReader();
       reader.onload = (e) => {
-          setUser(prev => ({ ...prev, avatar: e.target.result }));
+          const newAvatar = e.target.result;
+          
+          // 1. Cập nhật hiển thị ngay lập tức
+          setUser(prev => ({ ...prev, avatar: newAvatar }));
+          
+          // 2. Bắn lên Redux để Header cập nhật
+          dispatch(updateUser({ avatar: newAvatar }));
+          
           message.success('Đã thay đổi ảnh đại diện!');
-          // Ở đây thực tế bạn cần dispatch action cập nhật avatar lên Redux nữa
       };
-      reader.readAsDataURL(file);
-      return false;
+      reader.readAsDataURL(file); 
+      return false; 
   };
 
-  // Nút Gia hạn -> Chuyển sang trang Pricing
-  const handleRenewClick = () => {
-      navigate('/pricing'); 
+  const handleChoosePackage = (pkg) => {
+    setIsRenewModalOpen(false);
+    // Gửi đúng format selectedPackage cho trang Payment
+    navigate('/payment', { 
+        state: { 
+            selectedPackage: {
+                id: pkg.id,
+                name: pkg.name,
+                price: pkg.value,
+                duration: pkg.duration
+            } 
+        } 
+    });
   };
 
-  // --- TAB COMPONENTS ---
+  // COMPONENTS CON
   const LearningTab = () => (
     <div>
         <Card style={{ ...customStyles.cardShadow, background: 'linear-gradient(135deg, #e6fffb 0%, #f0fcfc 100%)', marginBottom: 24 }} bordered={false}>
@@ -149,159 +239,108 @@ const Profile = () => {
                              <Title level={3} style={{ margin: 0, color: customStyles.primaryColor }}>{user.level}</Title>
                           </div>
                     </Space>
-                    <div>
-                        <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: 4}}>
-                            <Text strong>Tiến độ lên cấp A2</Text>
-                            <Text strong style={{color: customStyles.primaryColor}}>{user.levelProgress}%</Text>
-                        </div>
-                        <Progress percent={user.levelProgress} strokeColor={customStyles.primaryColor} trailColor="#d9f7be" showInfo={false} strokeWidth={10} />
-                    </div>
+                    <Progress percent={user.levelProgress} strokeColor={customStyles.primaryColor} trailColor="#d9f7be" />
                 </Col>
                 <Col span={8} style={{textAlign: 'center', borderLeft: '1px solid #eee'}}>
-                    <Statistic title="Bài đã học" value={fullHistoryData.length} prefix={<CheckCircleOutlined style={{color: '#52c41a'}} />} valueStyle={{ fontWeight: 'bold' }} />
+                    <Statistic title="Bài đã học" value={user.learnedHistory.length} prefix={<CheckCircleOutlined style={{color: '#52c41a'}} />} />
+                    <Divider style={{margin: '12px 0'}} />
+                     <Statistic title="Hạn sử dụng" value={user.subscription.daysLeft} suffix="ngày" prefix={<ClockCircleOutlined style={{color: '#fa8c16'}} />} valueStyle={{ fontWeight: 'bold', fontSize: 20 }} />
                 </Col>
             </Row>
         </Card>
-        <Title level={5} style={{marginBottom: 20}}><HistoryOutlined /> Bài học gần đây</Title>
+        <Title level={5}><HistoryOutlined /> Bài học gần đây</Title>
         <div style={{padding: '0 12px'}}>
             <Timeline items={user.learnedHistory.map((item, idx) => ({
                     color: item.status === 'finish' ? 'green' : 'blue',
-                    children: (
-                        <Card style={{marginBottom: 12, border: '1px solid #f0f0f0', borderRadius: 8}} bodyStyle={{padding: 12}} bordered={false} hoverable>
-                             <Row justify="space-between" align="middle">
-                                 <Col>
-                                     <Text strong style={{fontSize: 15}}>{item.title}</Text>
-                                     <br/>
-                                     <Space split={<Divider type="vertical" />} size="small"><Tag color="blue">{item.topic}</Tag><Text type="secondary" style={{fontSize: 12}}>{item.date}</Text></Space>
-                                 </Col>
-                                 <Col>{item.score ? <Tag color="success">Điểm: <b>{item.score}</b></Tag> : <Button type="primary" size="small" shape="round" ghost onClick={() => navigate('/conversation')}>Học tiếp</Button>}</Col>
-                             </Row>
-                        </Card>
-                    )
+                    children: <Text>{item.title} - <Text type="secondary">{item.date}</Text></Text>
                 }))}
             />
         </div>
-        <div style={{ textAlign: 'center', marginTop: 16 }}><Button type="dashed" icon={<ArrowLeftOutlined rotate={180} />} onClick={() => setIsHistoryModalOpen(true)}>Xem tất cả lịch sử</Button></div>
+        <div style={{ textAlign: 'center' }}><Button type="dashed" onClick={() => setIsHistoryModalOpen(true)}>Xem tất cả lịch sử</Button></div>
     </div>
   );
 
-  const BillingTab = () => (
-      <div>
-          <Card style={{ ...customStyles.cardShadow, background: 'linear-gradient(135deg, #fff7e6 0%, #fffbe6 100%)', border: '1px solid #ffe58f' }} bodyStyle={{padding: 24}} bordered={false}>
-              <Row align="middle" justify="space-between">
-                  <Col>
-                      <Space align="start">
-                          <Avatar size={48} style={{ backgroundColor: '#faad14' }} icon={<CrownOutlined />} />
-                          <div><Title level={4} style={{ margin: 0, color: '#d48806' }}>{user.subscription.plan}</Title><Badge status="processing" text={<Text type="success">Đang hoạt động</Text>} /></div>
-                      </Space>
-                  </Col>
-                  <Col style={{textAlign: 'right'}}><Button type="primary" danger shape="round" size="large" onClick={handleRenewClick}>Nâng cấp PRO</Button></Col>
-              </Row>
-              <Divider style={{margin: '20px 0', borderColor: '#fff1b8'}} />
-              <Row gutter={16}>
-                  <Col span={12}><Statistic title="Ngày bắt đầu" value={user.subscription.startDate} valueStyle={{fontSize: 16}} prefix={<ClockCircleOutlined />} /></Col>
-                  <Col span={12}><Statistic title="Ngày hết hạn" value={user.subscription.endDate} valueStyle={{fontSize: 16, color: '#cf1322'}} prefix={<ClockCircleOutlined />} /></Col>
-              </Row>
-          </Card>
-          <Title level={5} style={{margin: '24px 0 16px'}}><WalletOutlined /> Lịch sử giao dịch</Title>
-          {user.purchaseHistory.length > 0 ? (
-              <List dataSource={user.purchaseHistory} renderItem={item => (<List.Item>...</List.Item>)} />
-          ) : (
-              <div style={{textAlign: 'center', padding: 20, color: '#999'}}>Chưa có giao dịch nào</div>
-          )}
-      </div>
-  );
+  const BillingTab = () => {
+      // Chỉ lấy 10 giao dịch gần nhất
+      const recentTransactions = user.purchaseHistory.slice(0, 10);
+      const hasMore = user.purchaseHistory.length > 10;
+
+      return (
+        <div>
+            <Card style={{ ...customStyles.cardShadow, background: 'linear-gradient(135deg, #fff7e6 0%, #fffbe6 100%)', border: '1px solid #ffe58f' }} bodyStyle={{padding: 24}} bordered={false}>
+                <Row align="middle" justify="space-between">
+                    <Col>
+                        <Space align="start">
+                            <Avatar size={48} style={{ backgroundColor: '#faad14' }} icon={<CrownOutlined />} />
+                            <div>
+                                <Title level={4} style={{ margin: 0, color: '#d48806' }}>{user.subscription.plan}</Title>
+                                {user.subscription.daysLeft > 0 
+                                    ? <Badge status="processing" text={<Text type="success">Đang hoạt động</Text>} />
+                                    : <Badge status="error" text={<Text type="danger">Đã hết hạn</Text>} />
+                                }
+                            </div>
+                        </Space>
+                    </Col>
+                    <Col style={{textAlign: 'right'}}><Button type="primary" danger shape="round" size="large" onClick={() => setIsRenewModalOpen(true)}>Gia hạn / Nâng cấp</Button></Col>
+                </Row>
+                <Divider style={{margin: '20px 0', borderColor: '#fff1b8'}} />
+                <Row gutter={16}>
+                    <Col span={12}><Statistic title="Ngày bắt đầu" value={user.subscription.startDate} valueStyle={{fontSize: 16}} prefix={<ClockCircleOutlined />} /></Col>
+                    <Col span={12}><Statistic title="Ngày hết hạn" value={user.subscription.endDate} valueStyle={{fontSize: 16, color: '#cf1322'}} prefix={<ClockCircleOutlined />} /></Col>
+                </Row>
+            </Card>
+            
+            <Title level={5} style={{margin: '24px 0 16px'}}><WalletOutlined /> Lịch sử giao dịch (10 gần nhất)</Title>
+            
+            <List 
+              dataSource={recentTransactions} 
+              renderItem={item => (
+                  <List.Item style={{padding: '12px 0'}}>
+                      <List.Item.Meta 
+                          avatar={<Avatar style={{ backgroundColor: (item.status === 'success' || item.status === 'paid') ? '#f6ffed' : '#fff1f0', color: (item.status === 'success' || item.status === 'paid') ? '#52c41a' : '#cf1322' }} icon={(item.status === 'success' || item.status === 'paid') ? <CheckCircleOutlined /> : <ClockCircleOutlined />} />} 
+                          title={<Text strong>{item.pkg || item.package}</Text>} 
+                          description={<Text type="secondary"><ClockCircleOutlined style={{marginRight: 5}}/>{item.date}</Text>} 
+                      />
+                      <div style={{textAlign: 'right'}}>
+                          <Text strong style={{fontSize: 16, color: customStyles.primaryColor}}>{item.amount || (item.price ? item.price.toLocaleString() + 'đ' : '')}</Text>
+                          <br/>
+                          <Tag color={(item.status === 'success' || item.status === 'paid') ? 'green' : (item.status === 'pending' ? 'orange' : 'default')}>
+                              {(item.status === 'success' || item.status === 'paid') ? 'Thành công' : (item.status === 'pending' ? 'Chờ duyệt' : 'Hết hạn')}
+                          </Tag>
+                      </div>
+                  </List.Item>
+              )} 
+             />
+             
+             {hasMore && (
+                 <div style={{ textAlign: 'center', marginTop: 16 }}>
+                    <Button type="dashed" icon={<UnorderedListOutlined />} onClick={() => setIsTransactionModalOpen(true)}>
+                        Xem tất cả giao dịch
+                    </Button>
+                 </div>
+             )}
+        </div>
+    );
+  };
 
   const SettingsTab = () => (
       <Row gutter={32}>
-          <Col span={24}>
-              {/* --- PHẦN HỒ SƠ (Giữ nguyên) --- */}
+          <Col span={24} lg={12}>
               <Card title={<span><EditOutlined /> Hồ sơ cá nhân</span>} bordered={false} style={{...customStyles.cardShadow, marginBottom: 24}} headStyle={{background: '#fafafa'}}>
                   <Form layout="vertical" initialValues={user} onFinish={handleUpdateInfo} form={form}>
-                      <Row gutter={24}>
-                          <Col span={12}><Form.Item label="Họ và tên" name="name" rules={[{required: true}]}><Input prefix={<UserOutlined style={{color: '#bfbfbf'}} />} size="large" /></Form.Item></Col>
-                          <Col span={12}><Form.Item label="Email" name="email"><Input disabled prefix={<MailOutlined style={{color: '#bfbfbf'}} />} size="large" style={{backgroundColor: '#f5f5f5'}} /></Form.Item></Col>
-                          <Col span={12}><Form.Item label="Số điện thoại" name="phone"><Input prefix={<PhoneOutlined style={{color: '#bfbfbf'}} />} size="large" /></Form.Item></Col>
-                          <Col span={12}><Form.Item label="Giới tính" name="gender"><Select size="large"><Option value="male">Nam</Option><Option value="female">Nữ</Option></Select></Form.Item></Col>
-                          <Col span={12}><Form.Item label="Ngày sinh" name="dob"><DatePicker size="large" style={{width: '100%'}} format="DD/MM/YYYY" /></Form.Item></Col>
-                          <Col span={12}><Form.Item label="Địa chỉ" name="address"><Input prefix={<HomeOutlined style={{color: '#bfbfbf'}} />} size="large" /></Form.Item></Col>
-                          <Col span={24} style={{textAlign: 'right'}}><Button type="primary" htmlType="submit" size="large" style={{backgroundColor: customStyles.primaryColor}}>Lưu hồ sơ</Button></Col>
-                      </Row>
+                      <Form.Item label="Họ và tên" name="name" rules={[{required: true}]}><Input prefix={<UserOutlined style={{color: '#bfbfbf'}} />} size="large" /></Form.Item>
+                      <Form.Item label="Email" name="email"><Input disabled prefix={<MailOutlined style={{color: '#bfbfbf'}} />} size="large" style={{backgroundColor: '#f5f5f5'}} /></Form.Item>
+                      <Form.Item label="Số điện thoại" name="phone"><Input prefix={<PhoneOutlined style={{color: '#bfbfbf'}} />} size="large" /></Form.Item>
+                      <Form.Item label="Ngày sinh" name="dob"><DatePicker size="large" style={{width: '100%'}} format="DD/MM/YYYY" /></Form.Item>
+                      <Col span={24} style={{textAlign: 'right'}}><Button type="primary" htmlType="submit" icon={<CheckCircleOutlined />} size="large" style={{backgroundColor: customStyles.primaryColor, borderColor: customStyles.primaryColor}}>Lưu hồ sơ</Button></Col>
                   </Form>
               </Card>
-
-              {/* --- PHẦN BẢO MẬT (Đã cập nhật thêm ô Mật khẩu hiện tại) --- */}
+          </Col>
+          <Col span={24} lg={12}>
               <Card title={<span><LockOutlined /> Bảo mật</span>} bordered={false} style={customStyles.cardShadow} headStyle={{background: '#fafafa'}}>
                   <Form layout="vertical" form={passwordForm} onFinish={handleChangePass}>
-                      <Row gutter={24}>
-                          
-                          {/* 1. Ô MẬT KHẨU HIỆN TẠI (Mới thêm) */}
-                          <Col span={24}>
-                              <Form.Item 
-                                  label="Mật khẩu hiện tại" 
-                                  name="currentPassword" 
-                                  hasFeedback 
-                                  rules={[
-                                      { required: true, message: 'Vui lòng nhập mật khẩu hiện tại!' },
-                                      {
-                                          validator: async (_, value) => {
-                                              // GIẢ LẬP: Mật khẩu cũ là '123456'
-                                              // Nếu nhập khác '123456' thì báo lỗi đỏ
-                                              if (!value || value === '123456') {
-                                                  return Promise.resolve();
-                                              }
-                                              return Promise.reject(new Error('Mật khẩu hiện tại không đúng!'));
-                                          },
-                                      },
-                                  ]}
-                              >
-                                  <Input.Password 
-                                      prefix={<LockOutlined style={{color: '#bfbfbf'}}/>} 
-                                      size="large" 
-                                      placeholder="Nhập mật khẩu cũ (Test: 123456)"
-                                  />
-                              </Form.Item>
-                          </Col>
-
-                          {/* 2. Ô MẬT KHẨU MỚI */}
-                          <Col span={12}>
-                              <Form.Item 
-                                  label="Mật khẩu mới" 
-                                  name="password" 
-                                  hasFeedback
-                                  rules={[{required: true, min: 6, message: 'Mật khẩu phải từ 6 ký tự!'}]}
-                              >
-                                  <Input.Password prefix={<LockOutlined style={{color: '#bfbfbf'}}/>} size="large" />
-                              </Form.Item>
-                          </Col>
-
-                          {/* 3. Ô XÁC NHẬN MẬT KHẨU */}
-                          <Col span={12}>
-                              <Form.Item 
-                                  label="Xác nhận mật khẩu mới" 
-                                  name="confirm" 
-                                  dependencies={['password']} 
-                                  hasFeedback
-                                  rules={[
-                                      {required: true, message: 'Vui lòng xác nhận mật khẩu!'}, 
-                                      ({ getFieldValue }) => ({ 
-                                          validator(_, value) { 
-                                              if (!value || getFieldValue('password') === value) {
-                                                  return Promise.resolve(); 
-                                              }
-                                              return Promise.reject(new Error('Mật khẩu xác nhận không khớp!')); 
-                                          }, 
-                                      }),
-                                  ]}
-                              >
-                                  <Input.Password prefix={<LockOutlined style={{color: '#bfbfbf'}}/>} size="large" />
-                              </Form.Item>
-                          </Col>
-
-                          <Col span={24} style={{textAlign: 'right'}}>
-                              <Button type="default" danger htmlType="submit" size="large">Đổi mật khẩu</Button>
-                          </Col>
-                      </Row>
+                      <Form.Item label="Mật khẩu mới" name="password" rules={[{required: true, min: 6}]}><Input.Password prefix={<LockOutlined style={{color: '#bfbfbf'}}/>} size="large" /></Form.Item>
+                      <Col span={24} style={{textAlign: 'right'}}><Button type="default" danger htmlType="submit" size="large">Đổi mật khẩu</Button></Col>
                   </Form>
               </Card>
           </Col>
@@ -310,21 +349,16 @@ const Profile = () => {
 
   return (
     <div style={{ maxWidth: 1200, margin: '30px auto', padding: '0 20px', paddingBottom: 60 }}>
-      
-      {/* NÚT QUAY LẠI */}
-      <div style={{ marginBottom: 16 }}>
-          <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} style={{ fontSize: '16px', fontWeight: 500, paddingLeft: 0 }}>Quay lại</Button>
-      </div>
+      <div style={{ marginBottom: 16 }}><Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)}>Quay lại</Button></div>
 
       <Row gutter={[24, 24]}>
-        {/* CỘT TRÁI: THÔNG TIN CƠ BẢN */}
         <Col xs={24} md={7} lg={6}>
           <Card hoverable style={{ textAlign: 'center', ...customStyles.cardShadow }} bodyStyle={{padding: '30px 20px'}}>
             <div style={{ position: 'relative', display: 'inline-block', marginBottom: 20 }}>
                 <Avatar size={120} src={user.avatar} style={{ border: `4px solid ${customStyles.primaryColor}` }} icon={<UserOutlined />} />
                 <Upload name="avatar" showUploadList={false} beforeUpload={(file) => handleAvatarUpload({ file })}>
                     <Tooltip title="Tải ảnh đại diện mới">
-                        <Button type="primary" shape="circle" icon={<UploadOutlined />} size="middle" style={{ position: 'absolute', bottom: 0, right: 0, backgroundColor: customStyles.primaryColor }} />
+                        <Button type="primary" shape="circle" icon={<UploadOutlined />} size="middle" style={{ position: 'absolute', bottom: 0, right: 0, backgroundColor: customStyles.primaryColor, borderColor: customStyles.primaryColor }} />
                     </Tooltip>
                 </Upload>
             </div>
@@ -335,6 +369,7 @@ const Profile = () => {
                 <Space direction="vertical" size="middle" style={{width: '100%'}}>
                     <Row justify="space-between"><Col><Space><SafetyCertificateOutlined style={{ color: customStyles.primaryColor }} /> <Text strong>Level:</Text></Space></Col><Col><Tag color="cyan">{user.level}</Tag></Col></Row>
                     <Row justify="space-between"><Col><Space><CrownOutlined style={{ color: '#faad14' }} /> <Text strong>Gói:</Text></Space></Col><Col><Tag color="gold">{user.subscription.plan}</Tag></Col></Row>
+                    <Row justify="space-between"><Col><Space><CalendarOutlined style={{color: '#999'}} /> <Text type="secondary">Sinh nhật:</Text></Space></Col><Col><Text type="secondary">{user.dob ? user.dob.format('DD/MM/YYYY') : '---'}</Text></Col></Row>
                 </Space>
             </div>
             <Divider style={{ margin: '24px 0' }} />
@@ -342,7 +377,6 @@ const Profile = () => {
           </Card>
         </Col>
 
-        {/* CỘT PHẢI: TABS */}
         <Col xs={24} md={17} lg={18}>
           <Card style={{ ...customStyles.cardShadow, minHeight: 600 }} bodyStyle={{padding: '24px 32px'}}>
             <Tabs defaultActiveKey="1" size="large" tabBarStyle={{marginBottom: 32}} items={[
@@ -354,8 +388,33 @@ const Profile = () => {
         </Col>
       </Row>
 
-      <Modal title="Lịch sử học tập đầy đủ" open={isHistoryModalOpen} onCancel={() => setIsHistoryModalOpen(false)} footer={[<Button key="close" onClick={() => setIsHistoryModalOpen(false)}>Đóng</Button>]} width={700}>
-          <Table dataSource={fullHistoryData} columns={historyColumns} pagination={{ pageSize: 5 }} />
+      {/* MODAL LỊCH SỬ HỌC TẬP */}
+      <Modal title="Lịch sử học tập đầy đủ" open={isHistoryModalOpen} onCancel={() => setIsHistoryModalOpen(false)} footer={null} width={700}>
+          <Table dataSource={user.learnedHistory} columns={historyColumns} pagination={{ pageSize: 5 }} />
+      </Modal>
+
+      {/* MODAL LỊCH SỬ GIAO DỊCH (MỚI) */}
+      <Modal title="Toàn bộ lịch sử giao dịch" open={isTransactionModalOpen} onCancel={() => setIsTransactionModalOpen(false)} footer={null} width={800}>
+          <Table dataSource={user.purchaseHistory} columns={transactionColumns} pagination={{ pageSize: 10 }} rowKey={(r, i) => i} />
+      </Modal>
+
+      {/* MODAL GIA HẠN */}
+      <Modal title={<div style={{textAlign: 'center', fontSize: 20, fontWeight: 'bold'}}>Chọn gói nâng cấp</div>} open={isRenewModalOpen} onCancel={() => setIsRenewModalOpen(false)} footer={null} width={1000} centered>
+         <div style={{ padding: '20px 0', background: '#f5f5f5', borderRadius: 8 }}>
+            <Row gutter={[16, 16]} justify="center" style={{padding: '0 16px'}}>
+                {pricingPackages.map((pkg) => (
+                    <Col xs={24} md={8} key={pkg.id}>
+                        <Card hoverable bordered={pkg.isPopular} style={{ textAlign: 'center', height: '100%', border: pkg.isPopular ? `2px solid ${pkg.color}` : '1px solid #d9d9d9', transform: pkg.isPopular ? 'scale(1.05)' : 'scale(1)', zIndex: pkg.isPopular ? 2 : 1, borderRadius: 12 }} bodyStyle={{ padding: '30px 20px' }}>
+                            {pkg.isPopular && (<Tag color="#f50" style={{ position: 'absolute', top: 0, right: 0, padding: '4px 10px', fontSize: 12, borderTopRightRadius: 12, borderBottomLeftRadius: 12, border: 'none' }}>BEST SELLER</Tag>)}
+                            <Title level={4} style={{ color: pkg.color, marginTop: 10 }}>{pkg.name}</Title>
+                            <Title level={2} style={{ margin: '15px 0' }}>{pkg.price}</Title>
+                            <Paragraph type="secondary" style={{ minHeight: 44, marginBottom: 24 }}>{pkg.desc}</Paragraph>
+                            <Button type={pkg.isPopular ? "primary" : "default"} size="large" shape="round" block style={{ backgroundColor: pkg.isPopular ? pkg.color : 'transparent', borderColor: pkg.color, color: pkg.isPopular ? '#fff' : pkg.color, fontWeight: 'bold', height: 45 }} onClick={() => handleChoosePackage(pkg)}>Chọn gói này</Button>
+                        </Card>
+                    </Col>
+                ))}
+            </Row>
+         </div>
       </Modal>
     </div>
   );

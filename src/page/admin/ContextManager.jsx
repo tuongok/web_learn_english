@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Card, Tabs, Table, Tag, Button, Modal, Form, Input, 
   message, InputNumber, Space, Switch, Popconfirm, Tooltip, Typography 
@@ -11,49 +11,43 @@ import dayjs from 'dayjs';
 
 const { Text, Paragraph } = Typography;
 
-const ContextManager = () => {
-  //  STATE DỮ LIỆU 
+// --- DỮ LIỆU MẪU (Sẽ dùng nếu LocalStorage chưa có gì) ---
+const DEFAULT_PACKAGES = [
+    { key: 1, code: 'PKG01', name: 'Gói 1 Tháng', duration: '30 ngày', description: 'Cơ Bản', price: 399000, salePrice: 199000, status: 'active' },
+    { key: 2, code: 'PKG02', name: 'Gói 3 tháng', duration: '90 ngày', description: 'Tiêu chuẩn', price: 699000, salePrice: 499000, status: 'active' },
+    { key: 2, code: 'PKG03', name: 'Gói 6 tháng', duration: '180 ngày', description: 'Cao Cấp', price: 699000, salePrice: 499000, status: 'active' },
+];
 
-  // FR-01: Gói học (Có thêm trường 'code' để phân biệt các giai đoạn giá)
-  const [packages, setPackages] = useState([
-    { 
-      key: 1, code: '1', name: 'Gói 1 Tháng (Tháng 1)', 
-      duration: '30 ngày', description: 'Truy cập cơ bản',
-      price: 200000, salePrice: 159000, status: 'active' 
-    },
-    { 
-      key: 2, code: '2', name: 'Gói 1 Tháng (Tháng 2)', 
-      duration: '30 ngày', description: 'Giá mới áp dụng từ tháng 2',
-      price: 250000, salePrice: 250000, status: 'inactive' 
-    },
-    { 
-      key: 3, code: '3', name: 'Gói Trọn Đời', 
-      duration: 'Vĩnh viễn', description: 'Full tính năng VIP',
-      price: 2000000, salePrice: 1500000, status: 'active' 
-    },
-  ]);
-
-  // FR-02: Chủ đề
-  const [topics, setTopics] = useState([
+const DEFAULT_TOPICS = [
     { key: 1, name: 'Du lịch (Travel)', description: 'Từ vựng sân bay, khách sạn...' },
     { key: 2, name: 'Công sở (Business)', description: 'Phỏng vấn, họp hành...' },
-  ]);
+];
 
-  // FR-03: Hội thoại (Sắp xếp theo thời gian mới nhất)
-  const [conversations, setConversations] = useState([
-    { 
-      key: 1, title: 'Check-in Hotel', content: 'A: Hello, I have a reservation.\nB: Can I see your ID?',
-      level: 'B1', topic: 'Travel', author: 'Cô Lan', 
-      createdAt: '2023-12-18 10:00', updatedAt: '2023-12-18 10:00', 
-      active: true 
-    },
-    { 
-      key: 2, title: 'Greetings', content: 'A: Hi, how are you?\nB: I am fine, thanks.',
-      level: 'A1', topic: 'Daily', author: 'Thầy John', 
-      createdAt: '2023-12-15 09:30', updatedAt: '2023-12-16 14:20', 
-      active: true 
-    },
-  ]);
+const DEFAULT_CONVERSATIONS = [
+    { key: 1, title: 'Check-in Hotel', content: 'A: Hello, I have a reservation.\nB: Can I see your ID?', level: 'B1', topic: 'Travel', author: 'Cô Lan', createdAt: '2023-12-18 10:00', updatedAt: '2023-12-18 10:00', active: true },
+    { key: 2, title: 'Greetings', content: 'A: Hi, how are you?\nB: I am fine, thanks.', level: 'A1', topic: 'Daily', author: 'Thầy John', createdAt: '2023-12-15 09:30', updatedAt: '2023-12-16 14:20', active: true },
+];
+
+const ContextManager = () => {
+  // --- 1. STATE DỮ LIỆU (KHỞI TẠO TỪ LOCAL STORAGE) ---
+  
+  // FR-01: Gói học
+  const [packages, setPackages] = useState(() => {
+      const saved = localStorage.getItem('admin_packages');
+      return saved ? JSON.parse(saved) : DEFAULT_PACKAGES;
+  });
+
+  // FR-02: Chủ đề
+  const [topics, setTopics] = useState(() => {
+      const saved = localStorage.getItem('admin_topics');
+      return saved ? JSON.parse(saved) : DEFAULT_TOPICS;
+  });
+
+  // FR-03: Hội thoại
+  const [conversations, setConversations] = useState(() => {
+      const saved = localStorage.getItem('admin_conversations');
+      return saved ? JSON.parse(saved) : DEFAULT_CONVERSATIONS;
+  });
 
   // MODAL STATES 
   const [isPkgModal, setIsPkgModal] = useState(false);
@@ -63,57 +57,70 @@ const ContextManager = () => {
   const [formPkg] = Form.useForm();
   const [formTopic] = Form.useForm();
 
-  // LOGIC XỬ LÝ FR-01 (GÓI HỌC) 
+  // --- HÀM HỖ TRỢ LƯU LOCAL STORAGE ---
+  const saveToStorage = (key, data) => {
+      localStorage.setItem(key, JSON.stringify(data));
+  };
+
+  // --- LOGIC XỬ LÝ FR-01 (GÓI HỌC) ---
   const handleSavePkg = (values) => {
+    let newData;
     if (editingItem) {
         // Sửa
-        const newData = packages.map(p => p.key === editingItem.key ? { ...p, ...values } : p);
-        setPackages(newData);
+        newData = packages.map(p => p.key === editingItem.key ? { ...p, ...values } : p);
         message.success('Cập nhật gói học thành công');
     } else {
         // Thêm mới
         const newPkg = { ...values, key: Date.now(), status: 'active' };
-        setPackages([...packages, newPkg]);
+        newData = [...packages, newPkg];
         message.success('Thêm gói học mới thành công');
     }
+    setPackages(newData);
+    saveToStorage('admin_packages', newData); // Lưu ngay
     setIsPkgModal(false); formPkg.resetFields();
   };
 
   const handleDeletePkg = (key) => {
-      // Soft delete (Vô hiệu hóa) hoặc Xóa hẳn tùy logic
-      setPackages(packages.filter(p => p.key !== key));
+      const newData = packages.filter(p => p.key !== key);
+      setPackages(newData);
+      saveToStorage('admin_packages', newData); // Lưu ngay
       message.success('Đã xóa gói học');
   };
 
-  //  LOGIC XỬ LÝ FR-02 (CHỦ ĐỀ)
+  // --- LOGIC XỬ LÝ FR-02 (CHỦ ĐỀ) ---
   const handleSaveTopic = (values) => {
+      let newData;
       if (editingItem) {
-          setTopics(topics.map(t => t.key === editingItem.key ? { ...t, ...values } : t));
+          newData = topics.map(t => t.key === editingItem.key ? { ...t, ...values } : t);
       } else {
-          setTopics([...topics, { ...values, key: Date.now() }]);
+          newData = [...topics, { ...values, key: Date.now() }];
       }
+      setTopics(newData);
+      saveToStorage('admin_topics', newData); // Lưu ngay
       setIsTopicModal(false); formTopic.resetFields(); message.success('Lưu chủ đề thành công');
   };
 
   const handleDeleteTopic = (key) => {
-      setTopics(topics.filter(t => t.key !== key));
+      const newData = topics.filter(t => t.key !== key);
+      setTopics(newData);
+      saveToStorage('admin_topics', newData); // Lưu ngay
       message.success('Đã xóa chủ đề');
   };
 
-  // LOGIC XỬ LÝ FR-03 (HỘI THOẠI) 
+  // --- LOGIC XỬ LÝ FR-03 (HỘI THOẠI) ---
   const handleToggleConv = (id, checked) => {
       const newData = conversations.map(c => c.key === id ? {...c, active: checked} : c);
       setConversations(newData);
+      saveToStorage('admin_conversations', newData); // Lưu ngay
       
       if (!checked) {
-          // Logic: Thông báo tới giáo viên cập nhật hội thoại
           message.warning('Đã tắt hội thoại. Hệ thống đã gửi yêu cầu cập nhật tới Giáo viên');
       } else {
           message.success('Đã mở lại hội thoại');
       }
   };
 
-  //  CỘT BẢNG 
+  // --- CỘT BẢNG (GIỮ NGUYÊN GIAO DIỆN) ---
   const pkgColumns = [
     { title: 'Mã gói', dataIndex: 'code', render: t => <Tag color="purple">{t}</Tag> },
     { 
@@ -198,7 +205,7 @@ const ContextManager = () => {
                     <Modal title={editingItem ? "Sửa Gói Học" : "Thêm Gói Học"} open={isPkgModal} onCancel={() => setIsPkgModal(false)} onOk={() => formPkg.submit()}>
                         <Form form={formPkg} layout="vertical" onFinish={handleSavePkg}>
                             <Space>
-                                <Form.Item name="code" label="Mã gói (Phân biệt đợt giá)" rules={[{required: true}]}><Input placeholder="VD: PKG_JAN_2024"/></Form.Item>
+                                <Form.Item name="code" label="Mã gói" rules={[{required: true}]}><Input placeholder="VD: PKG_JAN_2024"/></Form.Item>
                                 <Form.Item name="name" label="Tên gói" rules={[{required: true}]}><Input placeholder="VD: Gói 1 Tháng"/></Form.Item>
                             </Space>
                             <Space>
@@ -251,10 +258,9 @@ const ContextManager = () => {
                        * Danh sách hiển thị theo thứ tự mới nhất. Tắt hội thoại sẽ tự động gửi yêu cầu cập nhật tới giáo viên.
                    </div>
                    <Table 
-                        // Sắp xếp theo thời gian tạo mới nhất
-                        dataSource={[...conversations].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))} 
-                        columns={convColumns} 
-                        rowKey="key" 
+                       dataSource={[...conversations].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))} 
+                       columns={convColumns} 
+                       rowKey="key" 
                    />
                 </>
             )

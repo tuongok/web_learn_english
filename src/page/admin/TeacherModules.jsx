@@ -1,20 +1,46 @@
 import React, { useState } from 'react';
 import { Tabs, Table, Button, Modal, Form, Input, Select, Space, Tag, message, Card, Alert, Upload, Image, Popconfirm } from 'antd';
 import { 
-    MessageOutlined, PlusOutlined, DeleteOutlined, BookOutlined, 
-    BarsOutlined, EditOutlined, UploadOutlined, VideoCameraOutlined 
+  MessageOutlined, PlusOutlined, DeleteOutlined, BookOutlined, 
+  BarsOutlined, EditOutlined, UploadOutlined, VideoCameraOutlined 
 } from '@ant-design/icons';
 
 const { Option } = Select;
 
+// --- DỮ LIỆU MẪU (Sẽ hiển thị nếu chưa có dữ liệu trong LocalStorage) ---
+const DEFAULT_LEVELS = [
+    { key: 1, name: 'A1 (Sơ cấp)' }, 
+    { key: 2, name: 'B1 (Trung cấp)' }
+];
+
+const DEFAULT_CONVS = [
+    { key: 1, title: 'Greetings', level: 'A1 (Sơ cấp)', topic: 'Daily', count: 2, sentences: [{role: 'A', text: 'Hi'}, {role: 'B', text: 'Hello'}] }
+];
+
+const DEFAULT_DICT = [
+    { key: 1, word: 'Hello', type: 'noun', meaning: 'Xin chào', family: 'Hi' }
+];
+
 const TeacherModules = () => {
-  //STATE DỮ LIỆU 
-  const [levels, setLevels] = useState([
-      { key: 1, name: 'A1 (Sơ cấp)' }, 
-      { key: 2, name: 'B1 (Trung cấp)' }
-  ]);
-  const [conversations, setConversations] = useState([]);
-  const [dictionary, setDictionary] = useState([]);
+  // --- 1. STATE DỮ LIỆU (KHỞI TẠO TỪ LOCAL STORAGE) ---
+  
+  // FR-01: Levels
+  const [levels, setLevels] = useState(() => {
+      const saved = localStorage.getItem('teacher_levels');
+      return saved ? JSON.parse(saved) : DEFAULT_LEVELS;
+  });
+
+  // FR-02: Conversations
+  const [conversations, setConversations] = useState(() => {
+      const saved = localStorage.getItem('teacher_conversations');
+      return saved ? JSON.parse(saved) : DEFAULT_CONVS;
+  });
+
+  // FR-03: Dictionary
+  const [dictionary, setDictionary] = useState(() => {
+      const saved = localStorage.getItem('teacher_dictionary');
+      return saved ? JSON.parse(saved) : DEFAULT_DICT;
+  });
   
   // State quản lý Modal
   const [isLevelModal, setIsLevelModal] = useState(false);
@@ -36,6 +62,11 @@ const TeacherModules = () => {
     return e?.fileList;
   };
 
+  // HÀM HỖ TRỢ LƯU LOCAL STORAGE
+  const saveStorage = (key, data) => {
+      localStorage.setItem(key, JSON.stringify(data));
+  };
+
   // HÀM CHUNG: XỬ LÝ MỞ MODAL 
   const openModal = (type, record = null) => {
       setEditingItem(record);
@@ -53,19 +84,23 @@ const TeacherModules = () => {
 
   //  FR-01: QUẢN LÝ LEVEL 
   const handleSaveLevel = (values) => {
+    let newData;
     if (editingItem) {
-        const newData = levels.map(l => l.key === editingItem.key ? { ...l, ...values } : l);
-        setLevels(newData);
+        newData = levels.map(l => l.key === editingItem.key ? { ...l, ...values } : l);
         message.success('Cập nhật Level thành công');
     } else {
-        setLevels([...levels, { key: Date.now(), name: values.name }]);
+        newData = [...levels, { key: Date.now(), name: values.name }];
         message.success('Thêm Level thành công');
     }
+    setLevels(newData);
+    saveStorage('teacher_levels', newData); // Lưu ngay
     setIsLevelModal(false);
   };
 
   const handleDeleteLevel = (key) => {
-      setLevels(levels.filter(item => item.key !== key));
+      const newData = levels.filter(item => item.key !== key);
+      setLevels(newData);
+      saveStorage('teacher_levels', newData); // Lưu ngay
       message.success('Đã xóa Level');
   };
 
@@ -76,11 +111,11 @@ const TeacherModules = () => {
         return message.error('Tiêu đề hội thoại này đã tồn tại!');
     }
 
-    // Xử lý link ảnh (Giả lập: Lấy ảnh đầu tiên trong list upload)
+    // Xử lý link ảnh
     let mediaUrl = null;
     if (values.media && values.media.length > 0) {
-        // Trong thực tế,lấy URL từ server trả về.
-        // Ở đây dùng URL giả hoặc URL preview của browser
+        // Lưu ý: LocalStorage có giới hạn dung lượng, nếu ảnh Base64 quá nặng sẽ lỗi.
+        // Ở đây ta dùng URL giả hoặc thumbUrl nếu nhẹ.
         mediaUrl = values.media[0].thumbUrl || 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png';
     }
 
@@ -88,39 +123,52 @@ const TeacherModules = () => {
         ...values, 
         key: editingItem ? editingItem.key : Date.now(), 
         count: values.sentences ? values.sentences.length : 0,
-        media: mediaUrl
+        media: mediaUrl,
+        // Cần loại bỏ trường 'media' (file object) trước khi lưu vào localStorage để tránh lỗi
+        // Ta chỉ lưu mediaUrl dạng string thôi
     };
 
+    let newData;
     if (editingItem) {
-        setConversations(conversations.map(c => c.key === editingItem.key ? newConv : c));
+        newData = conversations.map(c => c.key === editingItem.key ? newConv : c);
         message.success('Cập nhật hội thoại thành công');
     } else {
-        setConversations([...conversations, newConv]);
+        newData = [...conversations, newConv];
         message.success('Tạo hội thoại thành công');
     }
+    
+    setConversations(newData);
+    saveStorage('teacher_conversations', newData); // Lưu ngay
     setIsConvModal(false);
   };
 
   const handleDeleteConv = (key) => {
-      setConversations(conversations.filter(c => c.key !== key));
+      const newData = conversations.filter(c => c.key !== key);
+      setConversations(newData);
+      saveStorage('teacher_conversations', newData); // Lưu ngay
       message.success('Đã xóa hội thoại');
   };
 
   //FR-03: QUẢN LÝ TỪ ĐIỂN 
   const handleSaveDict = (values) => {
      const newWord = { ...values, key: editingItem ? editingItem.key : Date.now() };
+     let newData;
      if (editingItem) {
-         setDictionary(dictionary.map(d => d.key === editingItem.key ? newWord : d));
+         newData = dictionary.map(d => d.key === editingItem.key ? newWord : d);
          message.success('Cập nhật từ vựng thành công');
      } else {
-         setDictionary([...dictionary, newWord]);
+         newData = [...dictionary, newWord];
          message.success('Thêm từ mới thành công');
      }
+     setDictionary(newData);
+     saveStorage('teacher_dictionary', newData); // Lưu ngay
      setIsDictModal(false);
   };
 
   const handleDeleteDict = (key) => {
-      setDictionary(dictionary.filter(d => d.key !== key));
+      const newData = dictionary.filter(d => d.key !== key);
+      setDictionary(newData);
+      saveStorage('teacher_dictionary', newData); // Lưu ngay
       message.success('Đã xóa từ vựng');
   };
 
@@ -132,7 +180,7 @@ const TeacherModules = () => {
             children: (
                 <>
                     <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal('level')} style={{marginBottom: 16}}>Thêm Level</Button>
-                    <Table dataSource={levels} columns={[
+                    <Table dataSource={levels} rowKey="key" columns={[
                         { title: 'Tên Level', dataIndex: 'name' },
                         { title: 'Hành động', width: 150, render: (_, r) => (
                             <Space>
@@ -156,7 +204,7 @@ const TeacherModules = () => {
             children: (
                 <>
                     <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal('conv')} style={{marginBottom: 16, backgroundColor: '#fa8c16', borderColor: '#fa8c16'}}>Tạo bài hội thoại</Button>
-                    <Table dataSource={conversations} columns={[
+                    <Table dataSource={conversations} rowKey="key" columns={[
                         { title: 'Media', dataIndex: 'media', width: 80, render: src => src ? <Image src={src} width={50}/> : <VideoCameraOutlined style={{fontSize: 24, color: '#ccc'}}/> },
                         { title: 'Tiêu đề', dataIndex: 'title', render: t => <b>{t}</b> },
                         { title: 'Level', dataIndex: 'level', render: t => <Tag color="blue">{t}</Tag> },
@@ -191,7 +239,7 @@ const TeacherModules = () => {
                                         </Space>
                                     </div>
                                     <div style={{width: 200}}>
-                                        {/*  */}
+                                        {/* */}
                                         <Form.Item 
                                             name="media" 
                                             label="Hình ảnh / Video minh họa" 
@@ -252,7 +300,7 @@ const TeacherModules = () => {
             children: (
                 <>
                     <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal('dict')} style={{marginBottom: 16}}>Thêm từ mới</Button>
-                    <Table dataSource={dictionary} columns={[
+                    <Table dataSource={dictionary} rowKey="key" columns={[
                         { title: 'Từ vựng', dataIndex: 'word', render: t => <b style={{color: '#d4380d'}}>{t}</b> },
                         { title: 'Loại từ', dataIndex: 'type', render: t => <Tag>{t}</Tag> },
                         { title: 'Nghĩa', dataIndex: 'meaning' },
