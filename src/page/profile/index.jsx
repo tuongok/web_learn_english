@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import myAvatar from '../../img/thienle.jpg'; // Đảm bảo đường dẫn ảnh đúng
+import myAvatar from '../../img/thienle.jpg'; 
 import {
   Card, Row, Col, Avatar, Typography, Tabs, Button, Tag,
   List, Progress, Divider, Timeline, Form, Input, Upload, message, Statistic, Space, Badge, Tooltip, Modal, Table, DatePicker
@@ -9,15 +9,16 @@ import {
   UserOutlined, UploadOutlined, SafetyCertificateOutlined,
   HistoryOutlined, WalletOutlined, EditOutlined,
   CheckCircleOutlined, ClockCircleOutlined, CrownOutlined,
-  LogoutOutlined, MailOutlined, PhoneOutlined, LockOutlined, RightOutlined,
-  CalendarOutlined, ArrowLeftOutlined, UnorderedListOutlined
+  LogoutOutlined, MailOutlined, PhoneOutlined, LockOutlined, 
+  CalendarOutlined, ArrowLeftOutlined, UnorderedListOutlined,
+  StarFilled, TrophyFilled, SketchOutlined // Icon cho hạng thành viên
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 
 // --- IMPORT REDUX ---
 import { useSelector, useDispatch } from 'react-redux';
-import { updateUser, logout } from '../../redux/authSlice'; // Chỉnh đường dẫn đúng tới file slice của bạn
+import { updateUser, logout } from '../../redux/authSlice'; 
 
 dayjs.extend(customParseFormat);
 
@@ -32,6 +33,14 @@ const customStyles = {
     },
     primaryColor: '#13c2c2',
 };
+
+// --- CẤU HÌNH HẠNG THÀNH VIÊN ---
+const MEMBER_TIERS = [
+    { key: 'new', name: 'Thành Viên Mới', min: 0, max: 200000, color: '#8c8c8c', icon: <UserOutlined /> },
+    { key: 'silver', name: 'Hạng Bạc (Silver)', min: 200000, max: 1000000, color: '#A0A0A0', icon: <TrophyFilled /> }, 
+    { key: 'gold', name: 'Hạng Vàng (Gold)', min: 1000000, max: 3000000, color: '#FAAD14', icon: <CrownOutlined /> }, 
+    { key: 'diamond', name: 'Kim Cương (Diamond)', min: 3000000, max: 9999999999, color: '#1890ff', icon: <SketchOutlined /> } 
+];
 
 const Profile = () => {
   const [form] = Form.useForm();
@@ -54,24 +63,35 @@ const Profile = () => {
     { id: 3, name: 'Gói 6 tháng', price: '899.000đ', value: 899000, duration: 180, desc: 'Tiết kiệm 40%.', color: '#faad14', isPopular: false }
   ];
 
-  // --- 2. LOGIC TÍNH TOÁN NGÀY HẾT HẠN (CỘNG DỒN) ---
+  // --- HÀM HỖ TRỢ: CHUYỂN ĐỔI TIỀN TỆ STRING SANG SỐ ---
+  const parseCurrency = (str) => {
+      if(!str) return 0;
+      if (typeof str === 'number') return str;
+      return parseInt(str.toString().replace(/\./g, '').replace('đ', '').replace(/,/g, '')) || 0;
+  };
+
+  // --- 2. LOGIC TÍNH TOÁN SUBSCRIPTION & MEMBER TIER ---
   const calculateSubscription = (history) => {
-      const sortedHistory = [...history].reverse(); // Đảo ngược để tính từ cũ -> mới
+      const sortedHistory = [...history].reverse(); // Cũ nhất -> Mới nhất
       
       let expiryDate = dayjs(); 
       let hasActiveSub = false;
+      let totalSpent = 0; // Tổng tiền đã chi
 
       sortedHistory.forEach(transaction => {
-          // Lưu ý: Code Payment của bạn lưu status là 'pending' ban đầu, sau đó mới set thành công.
-          // Ở đây ta giả định chỉ tính các giao dịch đã thành công hoặc pending (tùy logic bạn muốn)
+          // Tính tổng tiền cho các đơn thành công
           if (transaction.status === 'success' || transaction.status === 'paid') {
               hasActiveSub = true;
               
+              // Cộng dồn tiền
+              const amount = parseCurrency(transaction.amount || transaction.price);
+              totalSpent += amount;
+
+              // Cộng dồn ngày
               let daysToAdd = 30;
               if (transaction.pkg?.includes('3 Tháng') || transaction.package?.includes('3 Tháng')) daysToAdd = 90;
               if (transaction.pkg?.includes('6 tháng') || transaction.package?.includes('6 tháng')) daysToAdd = 180;
 
-              // Parse ngày giao dịch (Hỗ trợ cả format HH:mm DD/MM/YYYY và YYYY-MM-DD)
               let transDate = dayjs(transaction.date, 'HH:mm DD/MM/YYYY');
               if (!transDate.isValid()) transDate = dayjs(transaction.date);
 
@@ -83,41 +103,63 @@ const Profile = () => {
           }
       });
 
+      // --- LOGIC XÁC ĐỊNH HẠNG (TIER) ---
+      let currentTier = MEMBER_TIERS[0];
+      let nextTier = MEMBER_TIERS[1];
+      
+      for (let i = 0; i < MEMBER_TIERS.length; i++) {
+          if (totalSpent >= MEMBER_TIERS[i].min) {
+              currentTier = MEMBER_TIERS[i];
+              nextTier = MEMBER_TIERS[i + 1] || null; // Nếu max rồi thì không có next
+          }
+      }
+
+      // Tính % tiến độ lên hạng sau
+      let tierProgress = 100;
+      let toNextTier = 0;
+      
+      if (nextTier) {
+          const range = nextTier.min - currentTier.min;
+          const current = totalSpent - currentTier.min;
+          tierProgress = Math.min(Math.round((current / range) * 100), 100);
+          toNextTier = nextTier.min - totalSpent;
+      }
+
       const now = dayjs();
       const daysLeft = expiryDate.diff(now, 'day');
       const status = daysLeft > 0 ? 'active' : 'expired';
 
       return {
-          plan: hasActiveSub ? 'Premium Member' : 'Free Member',
+          plan: hasActiveSub ? 'Premium Member' : 'Free Member', // Tên gói hiển thị chung
           status: status,
           startDate: sortedHistory.length > 0 ? sortedHistory[0].date : dayjs().format('DD/MM/YYYY'),
           endDate: expiryDate.format('DD/MM/YYYY'),
-          daysLeft: daysLeft > 0 ? daysLeft : 0
+          daysLeft: daysLeft > 0 ? daysLeft : 0,
+          // Thông tin hạng
+          tierData: currentTier,
+          nextTier: nextTier,
+          totalSpent: totalSpent,
+          tierProgress: tierProgress,
+          toNextTier: toNextTier
       };
   };
 
   // --- 3. LẤY DATA GIAO DỊCH TỪ LOCALSTORAGE ---
-  // Lấy từ kho 'transaction_history' (Kho chung với Admin) hoặc 'paymentHistory' (Kho riêng user nếu bạn dùng code cũ)
-  // Tốt nhất nên dùng chung 1 kho 'transaction_history' như đã sửa ở các bước trước
   const storedHistory = JSON.parse(localStorage.getItem('transaction_history') || localStorage.getItem('paymentHistory') || '[]');
-  
-  // Dữ liệu mẫu ban đầu để demo nếu chưa có gì
   const initialPurchaseHistory = storedHistory.length > 0 ? [] : [
-      { pkg: 'Gói 1 Tháng', date: '14:30 01/12/2024', amount: '199.000đ', status: 'success' },
+      { pkg: 'Gói 1 Tháng (Quà tặng)', date: '14:30 01/12/2024', amount: '0đ', status: 'success' }, // Demo
   ];
   const finalPurchaseHistory = [...storedHistory, ...initialPurchaseHistory];
   
   const subInfo = calculateSubscription(finalPurchaseHistory);
 
-  // --- 4. STATE USER (Kết hợp Redux + Local Data) ---
+  // --- 4. STATE USER ---
   const [user, setUser] = useState({
-    // Lấy thông tin định danh từ Redux để đồng bộ Header
     name: userRedux?.name || 'Lê Trí Thiện',
     email: userRedux?.email || 'letrithieng@gmail.com',
     phone: userRedux?.phone || '0942334470',
     avatar: userRedux?.avatar || myAvatar,
     
-    // Các thông tin cục bộ chỉ dùng ở trang này
     dob: userRedux?.dob ? dayjs(userRedux.dob) : dayjs('2000-01-01'),
     gender: 'male',
     address: 'Bình Thạnh, TP. Hồ Chí Minh',
@@ -134,7 +176,7 @@ const Profile = () => {
     purchaseHistory: finalPurchaseHistory
   });
 
-  // Effect để cập nhật lại state nếu Redux thay đổi (Ví dụ login từ nơi khác)
+  // Đồng bộ Redux -> State cục bộ
   useEffect(() => {
       if (userRedux) {
           setUser(prev => ({
@@ -157,7 +199,7 @@ const Profile = () => {
   ];
 
   const transactionColumns = [
-    { title: 'Gói cước', dataIndex: 'pkg', key: 'pkg', render: (t, r) => <Text strong>{t || r.package}</Text> }, // Hỗ trợ cả trường 'pkg' và 'package'
+    { title: 'Gói cước', dataIndex: 'pkg', key: 'pkg', render: (t, r) => <Text strong>{t || r.package}</Text> },
     { title: 'Thời gian', dataIndex: 'date', key: 'date' },
     { title: 'Số tiền', dataIndex: 'amount', key: 'amount', align: 'right', render: (t, r) => <Text type="danger">{t || (r.price ? r.price.toLocaleString() + 'đ' : '0đ')}</Text> },
     { title: 'Trạng thái', dataIndex: 'status', key: 'status', align: 'center', render: s => <Tag color={s === 'success' || s === 'paid' ? 'green' : (s === 'pending' ? 'orange' : 'red')}>{s === 'success' || s === 'paid' ? 'Thành công' : (s === 'pending' ? 'Chờ duyệt' : 'Thất bại')}</Tag> }
@@ -166,12 +208,9 @@ const Profile = () => {
   // --- HÀM XỬ LÝ SỰ KIỆN ---
   
   const handleUpdateInfo = (values) => {
-    // 1. Cập nhật Local State
     setUser(prev => ({ ...prev, ...values }));
-    
-    // 2. Cập nhật Redux (Quan trọng để Header đổi theo)
+    // Cập nhật Redux để Header đổi tên theo
     dispatch(updateUser(values));
-    
     message.success('Cập nhật hồ sơ thành công!');
   };
 
@@ -183,7 +222,7 @@ const Profile = () => {
   };
 
   const handleLogout = () => {
-      dispatch(logout()); // Gọi action logout của Redux
+      dispatch(logout()); 
       navigate('/login');
   };
 
@@ -198,13 +237,9 @@ const Profile = () => {
       const reader = new FileReader();
       reader.onload = (e) => {
           const newAvatar = e.target.result;
-          
-          // 1. Cập nhật hiển thị ngay lập tức
           setUser(prev => ({ ...prev, avatar: newAvatar }));
-          
-          // 2. Bắn lên Redux để Header cập nhật
+          // Cập nhật Redux để Header đổi ảnh theo
           dispatch(updateUser({ avatar: newAvatar }));
-          
           message.success('Đã thay đổi ảnh đại diện!');
       };
       reader.readAsDataURL(file); 
@@ -213,7 +248,6 @@ const Profile = () => {
 
   const handleChoosePackage = (pkg) => {
     setIsRenewModalOpen(false);
-    // Gửi đúng format selectedPackage cho trang Payment
     navigate('/payment', { 
         state: { 
             selectedPackage: {
@@ -261,33 +295,56 @@ const Profile = () => {
   );
 
   const BillingTab = () => {
-      // Chỉ lấy 10 giao dịch gần nhất
       const recentTransactions = user.purchaseHistory.slice(0, 10);
       const hasMore = user.purchaseHistory.length > 10;
+      const { tierData, nextTier, totalSpent, tierProgress, toNextTier } = user.subscription;
 
       return (
         <div>
-            <Card style={{ ...customStyles.cardShadow, background: 'linear-gradient(135deg, #fff7e6 0%, #fffbe6 100%)', border: '1px solid #ffe58f' }} bodyStyle={{padding: 24}} bordered={false}>
+            {/* THẺ HẠNG THÀNH VIÊN */}
+            <Card style={{ ...customStyles.cardShadow, background: `linear-gradient(135deg, #fff 0%, ${tierData.color}15 100%)`, border: `1px solid ${tierData.color}40` }} bodyStyle={{padding: 24}} bordered={false}>
                 <Row align="middle" justify="space-between">
                     <Col>
                         <Space align="start">
-                            <Avatar size={48} style={{ backgroundColor: '#faad14' }} icon={<CrownOutlined />} />
+                            <Avatar size={54} style={{ backgroundColor: tierData.color }} icon={tierData.icon} />
                             <div>
-                                <Title level={4} style={{ margin: 0, color: '#d48806' }}>{user.subscription.plan}</Title>
+                                <Title level={4} style={{ margin: 0, color: tierData.key === 'gold' ? '#d48806' : '#333' }}>{tierData.name}</Title>
                                 {user.subscription.daysLeft > 0 
                                     ? <Badge status="processing" text={<Text type="success">Đang hoạt động</Text>} />
-                                    : <Badge status="error" text={<Text type="danger">Đã hết hạn</Text>} />
+                                    : <Badge status="error" text={<Text type="danger">Hết hạn gói học</Text>} />
                                 }
                             </div>
                         </Space>
                     </Col>
-                    <Col style={{textAlign: 'right'}}><Button type="primary" danger shape="round" size="large" onClick={() => setIsRenewModalOpen(true)}>Gia hạn / Nâng cấp</Button></Col>
+                    <Col style={{textAlign: 'right'}}>
+                        <Button type="primary" shape="round" size="large" onClick={() => setIsRenewModalOpen(true)} style={{background: tierData.color, borderColor: tierData.color}}>
+                            Mua gói cước mới
+                        </Button>
+                    </Col>
                 </Row>
-                <Divider style={{margin: '20px 0', borderColor: '#fff1b8'}} />
-                <Row gutter={16}>
-                    <Col span={12}><Statistic title="Ngày bắt đầu" value={user.subscription.startDate} valueStyle={{fontSize: 16}} prefix={<ClockCircleOutlined />} /></Col>
-                    <Col span={12}><Statistic title="Ngày hết hạn" value={user.subscription.endDate} valueStyle={{fontSize: 16, color: '#cf1322'}} prefix={<ClockCircleOutlined />} /></Col>
-                </Row>
+                
+                <Divider style={{margin: '20px 0', borderColor: '#eee'}} />
+                
+                {/* THANH TIẾN ĐỘ LÊN HẠNG */}
+                {nextTier ? (
+                    <div>
+                        <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: 5}}>
+                            <Text type="secondary">Tổng chi tiêu: <b style={{color: '#333'}}>{totalSpent.toLocaleString()}đ</b></Text>
+                            <Text type="secondary">Mục tiêu: <b style={{color: tierData.color}}>{nextTier.name}</b></Text>
+                        </div>
+                        <Tooltip title={`Chi tiêu thêm ${toNextTier.toLocaleString()}đ để lên hạng ${nextTier.name}`}>
+                            <Progress percent={tierProgress} strokeColor={tierData.color} trailColor="#f0f0f0" status="active" />
+                        </Tooltip>
+                        <Text style={{fontSize: 12, color: '#888'}}>
+                            Cần tích lũy thêm <b>{toNextTier.toLocaleString()}đ</b> để thăng hạng.
+                        </Text>
+                    </div>
+                ) : (
+                    <div>
+                        <Progress percent={100} strokeColor="#1890ff" format={() => 'MAX LEVEL'} />
+                        <Text type="success">Chúc mừng! Bạn đã đạt hạng thành viên cao nhất.</Text>
+                    </div>
+                )}
             </Card>
             
             <Title level={5} style={{margin: '24px 0 16px'}}><WalletOutlined /> Lịch sử giao dịch (10 gần nhất)</Title>
@@ -302,7 +359,7 @@ const Profile = () => {
                           description={<Text type="secondary"><ClockCircleOutlined style={{marginRight: 5}}/>{item.date}</Text>} 
                       />
                       <div style={{textAlign: 'right'}}>
-                          <Text strong style={{fontSize: 16, color: customStyles.primaryColor}}>{item.amount || (item.price ? item.price.toLocaleString() + 'đ' : '')}</Text>
+                          <Text strong style={{fontSize: 16, color: customStyles.primaryColor}}>{item.amount || (item.price ? parseInt(item.price).toLocaleString() + 'đ' : '0đ')}</Text>
                           <br/>
                           <Tag color={(item.status === 'success' || item.status === 'paid') ? 'green' : (item.status === 'pending' ? 'orange' : 'default')}>
                               {(item.status === 'success' || item.status === 'paid') ? 'Thành công' : (item.status === 'pending' ? 'Chờ duyệt' : 'Hết hạn')}
@@ -364,6 +421,14 @@ const Profile = () => {
             </div>
             <Title level={3} style={{ marginBottom: 4 }}>{user.name}</Title>
             <Text type="secondary">{user.email}</Text>
+            
+            {/* Hiển thị Badge Hạng ở Sidebar */}
+            <div style={{marginTop: 10}}>
+                <Tag color={user.subscription.tierData.color} style={{fontSize: 14, padding: '4px 10px'}}>
+                    {user.subscription.tierData.icon} {user.subscription.tierData.name}
+                </Tag>
+            </div>
+
             <Divider style={{ margin: '24px 0' }} />
             <div style={{ textAlign: 'left', padding: '0 10px' }}>
                 <Space direction="vertical" size="middle" style={{width: '100%'}}>

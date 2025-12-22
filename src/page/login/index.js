@@ -6,14 +6,15 @@ import { useDispatch } from 'react-redux';
 import { login } from '../../redux/authSlice';
 import ForgotPasswordModal from '../Forgot_Password_Modal'; 
 import './style.css';
-import loginImg from '../../img/brainn.jpg';
+import loginImg from '../../img/brainn.jpg'; // Ảnh trang trí cho trang login
+import defaultUserAvatar from '../../img/thienle.jpg'; // Ảnh đại diện mặc định cho user
 
 function Login() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [loading, setLoading] = useState(false); // Loading cho nút đăng nhập thường
-  const [socialLoading, setSocialLoading] = useState(false); // Loading cho nút Social
+  const [loading, setLoading] = useState(false); 
+  const [socialLoading, setSocialLoading] = useState(false); 
 
   // --- GIẢ LẬP ĐĂNG NHẬP SOCIAL ---
   const handleFakeSocialLogin = (platform) => {
@@ -24,7 +25,7 @@ function Login() {
         const fakeUser = {
             name: platform === 'Google' ? 'Lê Trí Thiện (Google)' : 'Lê Trí Thiện (FB)',
             email: 'letrithien@gmail.com',
-            avatar: loginImg,
+            avatar: defaultUserAvatar, // Sử dụng ảnh Thiện Lê làm avatar
             role: 'user',
         };
         dispatch(login(fakeUser));
@@ -42,7 +43,7 @@ function Login() {
             const fakeUser = {
                 name: 'Lê Trí Thiện',
                 email: values.username,
-                avatar: loginImg,
+                avatar: defaultUserAvatar, // Sử dụng ảnh Thiện Lê làm avatar
                 role: 'user'
             };
             dispatch(login(fakeUser));
@@ -53,7 +54,7 @@ function Login() {
   };
 
   return (
-    <div className="auth-page"> {/* Dùng chung class auth-page cho đồng bộ */}
+    <div className="auth-page"> 
       
       {/* CỘT TRÁI */}
       <div className="auth-left">

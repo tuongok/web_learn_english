@@ -15,8 +15,6 @@ import UserAdmin from "../page/admin/UserAdmin";
 import TeacherModules from "../page/admin/TeacherModules";
 import ContextManager from "../page/admin/ContextManager";
 
-
-
 import OrderAdmin from "../page/admin/OrderAdmin";
 import SetupPayment from '../page/admin/SetupPayment';
 
