@@ -49,7 +49,7 @@ const BankSelector = ({ onSelectBank }) => {
         ))}
       </select>
       
-      {/* Gợi ý: Bạn có thể custom dropdown để hiển thị cả Logo bên cạnh tên */}
+      
     </div>
   );
 };

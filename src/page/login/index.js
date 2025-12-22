@@ -7,7 +7,7 @@ import { login } from '../../redux/authSlice';
 import ForgotPasswordModal from '../Forgot_Password_Modal'; 
 import './style.css';
 import loginImg from '../../img/brainn.jpg'; // Ảnh trang trí cho trang login
-import defaultUserAvatar from '../../img/thienle.jpg'; // Ảnh đại diện mặc định cho user
+import defaultUserAvatar from '../../img/avatar.jpg'; // Ảnh đại diện mặc định cho user
 
 function Login() {
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ function Login() {
         const fakeUser = {
             name: platform === 'Google' ? 'Lê Trí Thiện (Google)' : 'Lê Trí Thiện (FB)',
             email: 'letrithien@gmail.com',
-            avatar: defaultUserAvatar, // Sử dụng ảnh Thiện Lê làm avatar
+            avatar: defaultUserAvatar, 
             role: 'user',
         };
         dispatch(login(fakeUser));
@@ -43,7 +43,7 @@ function Login() {
             const fakeUser = {
                 name: 'Lê Trí Thiện',
                 email: values.username,
-                avatar: defaultUserAvatar, // Sử dụng ảnh Thiện Lê làm avatar
+                avatar: defaultUserAvatar, 
                 role: 'user'
             };
             dispatch(login(fakeUser));
