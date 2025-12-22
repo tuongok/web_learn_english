@@ -1,15 +1,15 @@
-import React from 'react';
 import { Row, Col, Button } from 'antd';
-import { useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
+import React, { useState } from 'react'
 import {
     ArrowRightOutlined, AudioOutlined, BankOutlined, CarOutlined,
     CheckCircleFilled, ClusterOutlined, CoffeeOutlined, DashboardOutlined,
     GlobalOutlined, HeartOutlined, ReadOutlined, RightOutlined,
     RiseOutlined, RobotOutlined, ShopOutlined, StarFilled
 } from '@ant-design/icons';
-import s1 from "../../img/nentienganh.jpg"; // Đảm bảo đường dẫn ảnh đúng
-import "./style.css"; // Đảm bảo file css tồn tại
+import s1 from "../../img/nentienganhmain.jpg";
+import "./style.css"; 
 
 // Dữ liệu gói cước (Pricing)
 const PACKAGES = [
@@ -41,11 +41,24 @@ const PACKAGES = [
         discount: '-40%'
     }
 ];
-
+const ALL_TOPICS = [
+    { icon: <CoffeeOutlined />, title: 'Giao tiếp hàng ngày', count: '120 bài' },
+    { icon: <GlobalOutlined />, title: 'Du lịch & Khám phá', count: '85 bài' },
+    { icon: <ShopOutlined />, title: 'Mua sắm', count: '40 bài' },
+    { icon: <BankOutlined />, title: 'Nhà hàng & Khách sạn', count: '60 bài' },
+    { icon: <RiseOutlined />, title: 'Tiếng Anh Công sở', count: '150 bài' },
+    { icon: <HeartOutlined />, title: 'Sức khỏe & Đời sống', count: '55 bài' },
+    { icon: <ReadOutlined />, title: 'Giáo dục', count: '90 bài' },
+    { icon: <CarOutlined />, title: 'Giao thông', count: '45 bài' },
+    // --- Các chủ đề bị ẩn (Sẽ hiện ra khi bấm nút) ---
+    { icon: <DashboardOutlined />, title: 'Công nghệ thông tin', count: '70 bài' },
+    { icon: <StarFilled />, title: 'Giải trí & Điện ảnh', count: '30 bài' },
+    { icon: <RobotOutlined />, title: 'Khoa học & Vũ trụ', count: '25 bài' },
+    { icon: <ClusterOutlined />, title: 'Kinh doanh & Khởi nghiệp', count: '100 bài' },
+];
 function Home() {
     const navigate = useNavigate();
 
-    // --- [SỬA LỖI TẠI ĐÂY] ---
     const handleRegister = (pkg) => {
         // 1. Xử lý giá tiền: "199.000đ" -> 199000
         const rawPrice = parseInt(pkg.price.toString().replace(/\./g, '').replace('đ', ''));
@@ -57,7 +70,7 @@ function Home() {
         // 3. Chuyển hướng và gửi state đúng cấu trúc 'selectedPackage'
         navigate('/payment', { 
             state: { 
-                selectedPackage: {   // <--- QUAN TRỌNG: Phải bọc trong 'selectedPackage'
+                selectedPackage: {   
                     id: pkg.id,
                     name: pkg.name, 
                     price: rawPrice, 
@@ -66,40 +79,56 @@ function Home() {
             } 
         });
     };
+    const [isExpanded, setIsExpanded] = useState(false);
+    const displayedTopics = isExpanded ? ALL_TOPICS : ALL_TOPICS.slice(0, 8);
 
     return (
         <>
             {/* 1. HERO SECTION */}
             <div className="section1">
-                <div className="container">
-                    <Row justify="space-between" align="middle" gutter={[40, 40]}>
-                        <Col xs={24} md={12} lg={12} className="col-text">
-                            <div className="content-wrapper">
-                                <h3 className="sub-title">Chỉ 1 Lộ Trình</h3>
-                                <h1 className="main-title">
-                                    Đạt Ngay Mục Tiêu <br />
-                                    <span className="highlight-text">Mơ Ước !!!</span>
-                                </h1>
-                                <p className="description">
-                                    Học Tiếng Anh online cùng AI - Bật máy là bật band!
-                                </p>
-                                <div className="tags-wrapper">
-                                    <span className="tag-item"><CheckCircleFilled style={{ color: '#0075F3' }} /> Phương pháp hiệu quả</span>
-                                    <span className="tag-item"><CheckCircleFilled style={{ color: '#0075F3' }} /> Kết quả như mong đợi</span>
-                                </div>
-                                <Button type="primary" size="large" className="btn-orange">
-                                    Dùng thử miễn phí <RightOutlined />
-                                </Button>
-                            </div>
-                        </Col>
-                        <Col xs={24} md={12} lg={12} className="col-img">
-                            <div className="img-wrapper">
-                                <img src={s1} alt="Banner Tiếng Anh" />
-                            </div>
-                        </Col>
-                    </Row>
+    <div className="container">
+        <Row justify="space-between" align="middle" gutter={[40, 40]}>
+            {/* CỘT CHỮ */}
+            <Col xs={24} md={12} lg={12} className="col-text">
+                <div className="content-wrapper">
+                    <h3 className="sub-title">Tiếng Anh Giao Tiếp 4.0</h3>
+                    
+                    <h1 className="main-title">
+                        Xóa Bỏ Nỗi Sợ <br />
+                        <span className="highlight-text">Nói Tiếng Anh !</span>
+                    </h1>
+
+                    <p className="description">
+                        Luyện tập hội thoại 1-1 cùng AI bất cứ lúc nào. <br/>
+                        Không sợ sai, không áp lực, sửa lỗi phát âm ngay lập tức.
+                    </p>
+
+                    <div className="tags-wrapper">
+                        <span className="tag-item">
+                            <CheckCircleFilled style={{ color: '#0075F3' }} /> Thực hành hội thoại 1:1
+                        </span>
+                        <span className="tag-item">
+                            <CheckCircleFilled style={{ color: '#0075F3' }} /> Phản xạ tự nhiên
+                        </span>
+                    </div>
+
+                    <Link to="/conversation">
+                        <Button type="primary" size="large" className="btn-orange">
+                            Học thử miễn phí <RightOutlined />
+                        </Button>
+                    </Link>
                 </div>
-            </div>
+            </Col>
+
+            {/* CỘT ẢNH */}
+            <Col xs={24} md={12} lg={12} className="col-img">
+                <div className="img-wrapper">
+                    <img src={s1} alt="Banner Tiếng Anh AI" />
+                </div>
+            </Col>
+        </Row>
+    </div>
+</div>
 
             {/* 2. FEATURES SECTION */}
             <div className="section2">
@@ -145,38 +174,43 @@ function Home() {
 
             {/* 3. TOPICS SECTION */}
             <div className="section3">
-                <div className="container">
-                    <div className="section-title">
-                        <h2>Chủ đề đa dạng</h2>
-                        <p>Lựa chọn lộ trình phù hợp với mục tiêu của bạn</p>
-                    </div>
-                    <Row gutter={[20, 20]}>
-                        {[
-                            { icon: <CoffeeOutlined />, title: 'Giao tiếp hàng ngày', count: '120 bài' },
-                            { icon: <GlobalOutlined />, title: 'Du lịch & Khám phá', count: '85 bài' },
-                            { icon: <ShopOutlined />, title: 'Mua sắm', count: '40 bài' },
-                            { icon: <BankOutlined />, title: 'Nhà hàng & Khách sạn', count: '60 bài' },
-                            { icon: <RiseOutlined />, title: 'Tiếng Anh Công sở', count: '150 bài' },
-                            { icon: <HeartOutlined />, title: 'Sức khỏe & Đời sống', count: '55 bài' },
-                            { icon: <ReadOutlined />, title: 'Giáo dục', count: '90 bài' },
-                            { icon: <CarOutlined />, title: 'Giao thông', count: '45 bài' },
-                        ].map((item, index) => (
-                            <Col xs={12} sm={8} md={6} key={index}>
-                                <div className="topic-card">
-                                    <div className="topic-icon">{item.icon}</div>
-                                    <div className="topic-info">
-                                        <h4>{item.title}</h4>
-                                        <span>{item.count}</span>
-                                    </div>
-                                </div>
-                            </Col>
-                        ))}
-                    </Row>
-                    <div style={{ textAlign: 'center', marginTop: '40px' }}>
-                        <Button className="btn-outline">Xem tất cả chủ đề</Button>
-                    </div>
+            <div className="container">
+                <div className="section-title">
+                    <h2>Chủ đề đa dạng</h2>
+                    <p>Lựa chọn lộ trình phù hợp với mục tiêu của bạn</p>
+                </div>
+                
+                {/* 4. RENDER DANH SÁCH ĐÃ TÍNH TOÁN */}
+                <Row gutter={[20, 20]}>
+    {displayedTopics.map((item, index) => (
+        <Col xs={12} sm={8} md={6} key={index}>
+            {/* THÊM SỰ KIỆN onClick VÀO ĐÂY */}
+            <div 
+                className="topic-card" 
+                onClick={() => navigate('/conversation')} 
+                style={{ cursor: 'pointer' }}          
+            >
+                <div className="topic-icon">{item.icon}</div>
+                <div className="topic-info">
+                    <h4>{item.title}</h4>
+                    <span>{item.count}</span>
                 </div>
             </div>
+        </Col>
+    ))}
+</Row>
+                
+                {/* 5. NÚT BẤM ĐỔI TRẠNG THÁI */}
+                <div style={{ textAlign: 'center', marginTop: '40px' }}>
+                    <Button 
+                        className="btn-outline" 
+                        onClick={() => setIsExpanded(!isExpanded)} // Đảo ngược trạng thái
+                    >
+                        {isExpanded ? "Thu gọn danh sách" : "Xem tất cả chủ đề"}
+                    </Button>
+                </div>
+            </div>
+        </div>
 
             {/* 4. TEST BANNER */}
             <div className="section-test">
@@ -191,9 +225,12 @@ function Home() {
                                         Dành 15 phút làm bài kiểm tra năng lực chuẩn CEFR.
                                         AI sẽ phân tích điểm mạnh, điểm yếu và thiết kế lộ trình học riêng biệt cho bạn.
                                     </p>
+                                    <NavLink to="/google.com">
                                     <Button type="primary" size="large" className="btn-white-outline">
                                         Làm bài kiểm tra ngay <ArrowRightOutlined />
                                     </Button>
+                                    </NavLink>
+                                    
                                 </div>
                             </Col>
                             <Col xs={24} md={10}>
@@ -247,18 +284,22 @@ function Home() {
 
             {/* 6. CTA FINAL */}
             <div className="section4-cta">
-                <div className="container">
-                    <Row justify="center" align="middle">
-                        <Col xs={24} md={16} className="text-center">
-                            <h2>Sẵn sàng bứt phá Tiếng Anh ngay hôm nay?</h2>
-                            <p>Tham gia cộng đồng hơn 10.000 học viên và trải nghiệm công nghệ AI tiên tiến nhất.</p>
-                            <Button type="primary" size="large" className="btn-white">
-                                Đăng ký tài khoản miễn phí
-                            </Button>
-                        </Col>
-                    </Row>
-                </div>
-            </div>
+    <div className="container">
+        <Row justify="center" align="middle">
+            <Col xs={24} md={16} className="text-center">
+                <h2>Sẵn sàng bứt phá Tiếng Anh ngay hôm nay?</h2>
+                <p>Tham gia cộng đồng hơn 10.000 học viên và trải nghiệm công nghệ AI tiên tiến nhất.</p>
+                
+                <Link to="/register">
+                    <Button type="primary" size="large" className="btn-white">
+                        Đăng ký tài khoản miễn phí
+                    </Button>
+                </Link>
+
+            </Col>
+        </Row>
+    </div>
+</div>
         </>
     );
 }

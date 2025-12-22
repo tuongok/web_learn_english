@@ -102,7 +102,7 @@ function Mindmap() {
 
         if (result) {
             setData(result);
-            setSelectedTopic(null); // Reset ô chọn chủ đề
+            setSelectedTopic(null); 
             message.success(`Đã tìm thấy từ: ${result.word}`);
         } else {
             setData(null);
@@ -115,8 +115,8 @@ function Mindmap() {
         const topicData = MOCK_TOPICS[value];
         if (topicData) {
             setData(topicData);
-            setSelectedTopic(value); // Cập nhật giá trị Select
-            setSearchTerm('');       // Xóa ô tìm kiếm cho đỡ rối
+            setSelectedTopic(value); 
+            setSearchTerm('');      
             message.success(`Đã chuyển sang chủ đề: ${topicData.word}`);
         }
     };

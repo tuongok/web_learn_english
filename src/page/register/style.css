@@ -11,52 +11,50 @@
     overflow: hidden;
 }
 
-/* --- CỘT TRÁI (ẢNH) --- */
-.register-page .register-left {
+/* CỘT TRÁI */
+.register-left {
     flex: 1;
-    background: linear-gradient(135deg, #E2F0FF 0%, #F4FAFF 100%); /* Màu nền khác chút cho đỡ chán */
+    background: linear-gradient(135deg, #E2F0FF 0%, #F4FAFF 100%); 
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     padding: 40px;
+    text-align: center;
 }
 
-.register-page .register-left img {
+.register-left img {
     max-width: 85%;
     height: auto;
     object-fit: contain;
     filter: drop-shadow(0 10px 20px rgba(0,0,0,0.1));
 }
 
-.register-page .register-left h2 {
+.register-left h2 {
     margin-top: 30px;
     font-size: 28px;
     color: var(--color-primary);
     font-weight: 700;
 }
 
-/* Ẩn trên mobile */
 @media (max-width: 992px) {
-    .register-page .register-left {
-        display: none;
-    }
+    .register-left { display: none; }
 }
 
-/* --- CỘT PHẢI (FORM) --- */
-.register-page .register-right {
+/* CỘT PHẢI */
+.register-right {
     flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
     padding: 20px;
     background-color: #fff;
-    overflow-y: auto; /* Cho phép cuộn nếu form dài quá */
+    overflow-y: auto;
 }
 
-.register-page .register-form-container {
+.register-form-container {
     width: 100%;
-    max-width: 450px; /* Form đăng ký rộng hơn chút */
+    max-width: 450px; 
     padding: 20px;
 }
 
@@ -67,28 +65,31 @@
     margin-bottom: 10px;
 }
 
-.register-page .sub-text {
+.sub-text {
     color: #888;
     margin-bottom: 25px;
     display: block;
     font-size: 15px;
 }
 
-/* Nút Đăng ký */
-.register-page .btn-register {
+/* NÚT ĐĂNG KÝ */
+.btn-register {
     height: 50px !important;
     font-size: 16px !important;
     font-weight: 600 !important;
     border-radius: 8px !important;
     background-color: var(--color-primary) !important;
     margin-top: 15px;
+    box-shadow: 0 4px 15px rgba(0, 117, 243, 0.3);
 }
 
-.register-page .btn-register:hover {
+.btn-register:hover {
     background-color: var(--color-hover) !important;
+    transform: translateY(-2px);
+    transition: all 0.3s;
 }
 
-.register-page .auth-actions {
+.auth-actions {
     display: flex;
     justify-content: center;
     margin-top: 25px;
@@ -99,4 +100,15 @@
     color: var(--color-primary);
     font-weight: 600;
     text-decoration: none;
+}
+
+/* NÚT SOCIAL */
+.register-page .ant-btn-default {
+    height: 45px;
+    font-weight: 500;
+    border-radius: 8px;
+}
+.register-page .ant-btn-default:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
 }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import myAvatar from '../../img/avt.jpg'; // Đảm bảo đường dẫn ảnh đúng
+import myAvatar from '../../img/thienle.jpg'; // Đảm bảo đường dẫn ảnh đúng
 import {
   Card, Row, Col, Avatar, Typography, Tabs, Button, Tag,
   List, Progress, Divider, Timeline, Form, Input, Upload, message, Statistic, Space, Badge, Tooltip, Modal, Table, DatePicker

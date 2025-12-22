@@ -8,7 +8,7 @@
     padding: 40px 20px;
     background-color: #F5F7FB;
     min-height: calc(100vh - 80px);
-    overflow-x: auto; /* Cho phép cuộn ngang nếu cây quá to */
+    overflow-x: auto;
 }
 
 .mindmap-container {
@@ -41,8 +41,8 @@
     padding-top: 20px; 
     position: relative;
     transition: all 0.5s;
-    display: flex; /* Xếp ngang */
-    gap: 40px; /* Khoảng cách giữa các nhánh lớn */
+    display: flex;
+    gap: 40px; 
 }
 
 .tree li {

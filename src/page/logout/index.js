@@ -14,7 +14,6 @@ function Logout() {
     // 2. Chuyển hướng ngay lập tức về trang đăng nhập (hoặc trang chủ)
     navigate('/login'); 
     
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

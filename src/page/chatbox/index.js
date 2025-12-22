@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Input, Button, Avatar, Tooltip } from 'antd';
 import { SendOutlined, AudioOutlined, RobotOutlined, UserOutlined, ClearOutlined } from '@ant-design/icons';
 import './style.css';
-
 // Dữ liệu mẫu ban đầu
 const WELCOME_MSG = {
     id: 1,

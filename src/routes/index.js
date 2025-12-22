@@ -22,6 +22,14 @@ import SetupPayment from '../page/admin/SetupPayment';
 
 import Profile from "../page/profile";
 import Chatbox from "../page/chatbox";
+import LearningGuide from "../page/guide";
+import FAQ from "../page/faq";
+import Contact from "../page/contact";
+import ActivateCode from "../page/activate";
+import RefundPolicy from "../page/refund";
+import About from "../page/about";
+import PrivacyPolicy from "../page/policy";
+import TermsOfService from "../page/terms";
 
 console.log("Check AdminLayout:", AdminLayout);
 console.log("Check UserAdmin:", UserAdmin);
@@ -40,14 +48,14 @@ export const routes = [
 
             // 2. NHÓM PRIVATE (Phải đăng nhập mới xem được)
             {
-                element: <Private />, // Bọc Private Router ở ngoài
+                element: <Private />, 
                 children: [
                     {
                         path: "conversation", // Luyện hội thoại
                         element: <Conversation />,
                     },
                     {
-                        path: "mindmap", // Tra từ điển Mindmap (Theo FR-09)
+                        path: "mindmap", // Tra từ điển Mindmap
                         element: <Mindmap />,
                     },
 
@@ -66,15 +74,47 @@ export const routes = [
                 ]
             },
 
-            // Logout thường không cần giao diện
             {
                 path: "logout",
                 element: <Logout />,
             },
+            {
+    path: "guide",
+    element: <LearningGuide />,
+},{
+
+    path: "faq",
+    element: <FAQ />,
+},
+{
+    path: "contact",
+    element: <Contact />,
+},
+{
+    path: "activate",
+    element: <ActivateCode />,
+},
+{
+    path: "refund-policy",
+    element: <RefundPolicy />,
+},
+{
+    path: "about",
+    element: <About />,
+},
+,
+{
+    path: "privacy-policy",
+    element: <PrivacyPolicy />,
+},
+{
+    path: "terms-of-service",
+    element: <TermsOfService />,
+},
         ]
     },
 
-    // PHẦN ADMIN CỦA BẠN 
+    // PHẦN ADMIN 
 
     {
         path: "/admin",

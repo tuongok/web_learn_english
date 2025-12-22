@@ -1,71 +1,89 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Form, Input, Button, Checkbox, message, Divider } from 'antd';
 import { UserOutlined, LockOutlined, GoogleOutlined, FacebookFilled } from '@ant-design/icons';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { login } from '../../redux/authSlice';
-import './style.css'; // Đã đổi thành CSS
-import loginImg from '../../img/thienle.jpg'; // Thay ảnh minh họa của bạn vào đây
+import ForgotPasswordModal from '../Forgot_Password_Modal'; 
+import './style.css';
+import loginImg from '../../img/brainn.jpg';
 
 function Login() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loading, setLoading] = useState(false); // Loading cho nút đăng nhập thường
+  const [socialLoading, setSocialLoading] = useState(false); // Loading cho nút Social
 
-  const onFinish = (values) => {
-    // Logic giả lập đăng nhập
-    if (values.username && values.password) {
-      const fakeUser = {
-        name: 'Lê Trí Thiện', // Tên giả
-        email: values.username,
-        avatar: loginImg,
-        role: 'user'
-      };
-      
-      // 1. Gửi dữ liệu vào Redux Store
-      dispatch(login(fakeUser));
-      
-      // 2. Thông báo & Chuyển trang
-      message.success('Đăng nhập thành công!');
-      navigate('/');
-    }
+  // --- GIẢ LẬP ĐĂNG NHẬP SOCIAL ---
+  const handleFakeSocialLogin = (platform) => {
+    setSocialLoading(true);
+    // Giả vờ đợi 1.5 giây
+    setTimeout(() => {
+        setSocialLoading(false);
+        const fakeUser = {
+            name: platform === 'Google' ? 'Lê Trí Thiện (Google)' : 'Lê Trí Thiện (FB)',
+            email: 'letrithien@gmail.com',
+            avatar: loginImg,
+            role: 'user',
+        };
+        dispatch(login(fakeUser));
+        message.success(`Đăng nhập bằng ${platform} thành công!`);
+        navigate('/');
+    }, 1500);
   };
 
-  const onFinishFailed = () => {
-    message.error('Vui lòng kiểm tra lại thông tin!');
+  // --- GIẢ LẬP ĐĂNG NHẬP THƯỜNG ---
+  const onFinish = (values) => {
+    setLoading(true);
+    setTimeout(() => {
+        setLoading(false);
+        if (values.username && values.password) {
+            const fakeUser = {
+                name: 'Lê Trí Thiện',
+                email: values.username,
+                avatar: loginImg,
+                role: 'user'
+            };
+            dispatch(login(fakeUser));
+            message.success('Đăng nhập thành công!');
+            navigate('/');
+        }
+    }, 1000);
   };
 
   return (
-    <div className="login-page">
+    <div className="auth-page"> {/* Dùng chung class auth-page cho đồng bộ */}
       
       {/* CỘT TRÁI */}
-      <div className="login-left">
-        <img src={loginImg} alt="English AI" />
-        <h2>Học tiếng Anh cùng AI</h2>
-        <p style={{color: '#666', marginTop: 10}}>Lộ trình cá nhân hóa - Bứt phá mọi kỹ năng</p>
+      <div className="auth-left">
+        <div className="auth-left-content">
+            <img src={loginImg} alt="English AI" className="hero-img"/>
+            <h2>Học tiếng Anh cùng AI</h2>
+            <p>Lộ trình cá nhân hóa - Bứt phá mọi kỹ năng</p>
+        </div>
       </div>
 
       {/* CỘT PHẢI */}
-      <div className="login-right">
-        <div className="login-form-container">
-          <h1>Đăng nhập</h1>
-          <span className="sub-text">Chào mừng bạn quay trở lại!</span>
+      <div className="auth-right">
+        <div className="auth-form-container">
+          <h1 className="auth-title">Đăng nhập</h1>
+          <span className="auth-subtitle">Chào mừng bạn quay trở lại!</span>
 
           <Form
             layout="vertical"
             initialValues={{ remember: true }}
             onFinish={onFinish}
-            onFinishFailed={onFinishFailed}
             size="large"
+            style={{ marginTop: 20 }}
           >
-            {/* Username */}
             <Form.Item
               name="username"
               rules={[{ required: true, message: 'Vui lòng nhập tài khoản!' }]}
             >
-              <Input prefix={<UserOutlined />} placeholder="Email hoặc Số điện thoại" />
+              <Input prefix={<UserOutlined />} placeholder="Email hoặc SĐT" />
             </Form.Item>
 
-            {/* Password */}
             <Form.Item
               name="password"
               rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' }]}
@@ -73,34 +91,50 @@ function Login() {
               <Input.Password prefix={<LockOutlined />} placeholder="Mật khẩu" />
             </Form.Item>
 
-            {/* Remember & Forgot Pass */}
             <Form.Item>
               <div className="auth-options">
                 <Form.Item name="remember" valuePropName="checked" noStyle>
                   <Checkbox>Ghi nhớ tôi</Checkbox>
                 </Form.Item>
-                <NavLink to="/forgot-password">Quên mật khẩu?</NavLink>
+                <a className="forgot-pass-link" onClick={() => setIsModalOpen(true)}>
+                    Quên mật khẩu?
+                </a>
               </div>
             </Form.Item>
 
-            {/* Submit Button */}
-            <Button type="primary" htmlType="submit" block className="btn-login">
+            <Button type="primary" htmlType="submit" block className="btn-auth" loading={loading}>
               Đăng nhập
             </Button>
           </Form>
 
-          {/* Social Login */}
           <Divider style={{color: '#999', fontSize: 13}}>Hoặc tiếp tục với</Divider>
-          <div style={{display: 'flex', gap: 15}}>
-            <Button block icon={<GoogleOutlined />}>Google</Button>
-            <Button block icon={<FacebookFilled style={{color: '#3b5998'}}/>}>Facebook</Button>
+          
+          <div className="social-btn-group">
+            <Button 
+                block 
+                icon={<GoogleOutlined />} 
+                loading={socialLoading}
+                onClick={() => handleFakeSocialLogin('Google')}
+            >
+                Google
+            </Button>
+            <Button 
+                block 
+                icon={<FacebookFilled style={{color: '#3b5998'}}/>} 
+                loading={socialLoading}
+                onClick={() => handleFakeSocialLogin('Facebook')}
+            >
+                Facebook
+            </Button>
           </div>
 
-          <div className="auth-actions">
-             Chưa có tài khoản? <NavLink to="/register" style={{marginLeft: 5}}>Đăng ký ngay</NavLink>
+          <div className="auth-action-footer">
+             Chưa có tài khoản? <NavLink to="/register" className="link-bold">Đăng ký ngay</NavLink>
           </div>
         </div>
       </div>
+
+      <ForgotPasswordModal isVisible={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 }

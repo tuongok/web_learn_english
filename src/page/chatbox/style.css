@@ -17,7 +17,7 @@
     box-shadow: 0 0 20px rgba(0,0,0,0.05);
 }
 
-/* --- KHU VỰC HIỂN THỊ TIN NHẮN --- */
+/* KHU VỰC HIỂN THỊ TIN NHẮN  */
 .messages-area {
     flex: 1;
     overflow-y: auto;

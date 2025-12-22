@@ -1,22 +1,55 @@
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { checkAuth } from './redux/authSlice'; // Import hàm kiểm tra đăng nhập
+import { checkAuth } from './redux/authSlice';
 import Allroutes from './components/allroutes';
 import './App.css';
+import AOS from 'aos';     // Thư viện hiệu ứng trồi lên
+import 'aos/dist/aos.css';  
+import SmoothScroll from './components/smooth_scroll'; // Component cuộn mượt
 
 function App() {
   const dispatch = useDispatch();
-
-  // useEffect này chạy 1 lần duy nhất khi web vừa tải xong
+  // --useEffect 1: Kiểm tra đăng nhập 
   useEffect(() => {
-    // Gọi hàm checkAuth để xem trong LocalStorage có lưu user không
-    // Nếu có -> Tự động set isLogin = true
     dispatch(checkAuth()); 
   }, [dispatch]);
 
+  // --- useEffect 2: Cấu hình AOS & Tự động gắn hiệu ứng
+  useEffect(() => {
+    // A. Đoạn code : Tự động tìm thẻ để gắn hiệu ứng
+    // Tìm tất cả thẻ: Tiêu đề (h1-h6), đoạn văn (p), ảnh (img), Card Antd (.ant-card), Nút (button)
+    const tagsToAnimate = document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, img, .ant-card, button');
+
+    tagsToAnimate.forEach((el) => {
+      // Chỉ gắn nếu thẻ đó CHƯA CÓ data-aos (để không đè lên những chỗ đã chỉnh tay ở trang Home)
+      if (!el.getAttribute('data-aos')) {
+        el.setAttribute('data-aos', 'fade-up'); // Mặc định là bay từ dưới lên
+        el.setAttribute('data-aos-duration', '1000'); // Tốc độ bay là 1 giây
+      }
+    });
+
+    // B. Khởi động AOS
+    AOS.init({
+      duration: 1000,     // Thời gian chạy hiệu ứng (ms)
+      once: true,         // Chỉ chạy 1 lần (không lặp lại khi cuộn lên xuống để đỡ rối mắt)
+      offset: 50,         // Cách mép dưới 50px thì bắt đầu chạy
+      easing: 'ease-out-cubic', // Kiểu chuyển động mượt
+      delay: 50,          // Độ trễ mặc định nhỏ
+    });
+    
+    // Refresh lại để đảm bảo AOS nhận diện được các thẻ vừa gắn attribute
+    AOS.refresh();
+
+  }, []); // Chạy 1 lần khi web vừa tải
+
   return (
     <>
-      <Allroutes />
+      {/* --- 2. BỌC SMOOTH SCROLL RA NGOÀI CÙNG --- */}
+      <SmoothScroll>
+        <div className="App">
+            <Allroutes />
+        </div>
+      </SmoothScroll>
     </>
   );
 }

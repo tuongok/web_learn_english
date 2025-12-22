@@ -18,11 +18,11 @@ const MOCK_SCRIPTS = {
         { role: 'ai', text: "Where are you flying to today?", trans: "Hôm nay bạn bay đi đâu?" },
         { role: 'user', text: "I am going to London.", trans: "Tôi sẽ đi London." },
     ],
-    'work': [ // Thêm cái này
+    'work': [ 
         { role: 'ai', text: "Good morning. Are you ready for the meeting?", trans: "Chào buổi sáng. Bạn sẵn sàng cho cuộc họp chưa?" },
         { role: 'user', text: "Yes, I have prepared all the documents.", trans: "Vâng, tôi đã chuẩn bị đủ tài liệu." },
     ],
-    'school': [ // Thêm cái này
+    'school': [ 
         { role: 'ai', text: "Did you finish your homework?", trans: "Em đã làm xong bài tập về nhà chưa?" },
         { role: 'user', text: "Not yet, I was too busy yesterday.", trans: "Chưa ạ, hôm qua em bận quá." },
     ]
@@ -92,7 +92,7 @@ function Conversation() {
         // ----------------------------------
 
         // Nếu OK thì mới chạy tiếp
-        const fullScript = topicData; // Lấy dữ liệu
+        const fullScript = topicData; 
         
         setConversation([]);
         setCurrentLineIndex(0);

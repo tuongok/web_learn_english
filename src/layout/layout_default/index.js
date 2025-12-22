@@ -1,15 +1,15 @@
 import React from 'react';
-import { Row, Col, Avatar, Space, Dropdown, Button } from "antd"; 
+import { Row, Col, Avatar, Space, Dropdown, Button } from "antd";
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
-import { 
-    FacebookFilled, YoutubeFilled, InstagramFilled, 
-    MailOutlined, PhoneOutlined, 
+import {
+    FacebookFilled, YoutubeFilled, InstagramFilled,
+    MailOutlined, PhoneOutlined,
     LogoutOutlined, UserOutlined, DownOutlined,
-    SafetyCertificateFilled 
+    SafetyCertificateFilled
 } from '@ant-design/icons';
 
 import { useSelector, useDispatch } from 'react-redux';
-import { logout } from '../../redux/authSlice'; 
+import { logout } from '../../redux/authSlice';
 
 import './style.scss';
 
@@ -18,13 +18,13 @@ function Layout() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const location = useLocation();
-    
+
     // Logic: Chỉ hiện Footer ở trang chủ
     const isHomePage = location.pathname === "/";
 
     const handleLogout = () => {
-        dispatch(logout()); 
-        navigate('/');      
+        dispatch(logout());
+        navigate('/');
     };
 
     const userMenu = [
@@ -42,7 +42,7 @@ function Layout() {
         {
             key: '3',
             label: (
-                <div onClick={handleLogout} style={{color: 'red', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px'}}>
+                <div onClick={handleLogout} style={{ color: 'red', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
                     <LogoutOutlined /> Đăng xuất
                 </div>
             ),
@@ -53,11 +53,11 @@ function Layout() {
         <>
             <div className="body">
                 <div className="layout__default" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-            
+
                     {/* --- HEADER --- */}
                     <header className="layout__header">
                         <div className="layout__header-container">
-                            
+
                             <div className="layout__logo">
                                 <NavLink to="/">English AI</NavLink>
                             </div>
@@ -67,26 +67,25 @@ function Layout() {
                                     <li><NavLink to="/">Trang chủ</NavLink></li>
                                     <li><NavLink to="/conversation">Luyện hội thoại</NavLink></li>
                                     {isLogin && <li><NavLink to="/mindmap">Từ vựng</NavLink></li>}
+                                    {isLogin && <li><NavLink to="/chatbox">Chat Box</NavLink></li>}
                                 </ul>
                             </nav>
 
                             <div className="layout__auth">
                                 {isLogin ? (
-                                    // --- [SỬA ĐỔI TẠI ĐÂY] ---
-                                    // Thêm trigger={['click']} để bấm mới hiện
-                                    <Dropdown 
-                                        menu={{ items: userMenu }} 
-                                        placement="bottomRight" 
-                                        trigger={['click']} 
+                                    <Dropdown
+                                        menu={{ items: userMenu }}
+                                        placement="bottomRight"
+                                        trigger={['click']}
                                     >
-                                        <Space className="user-info" style={{cursor: 'pointer', userSelect: 'none'}}>
-                                            <Avatar 
-                                                src={user?.avatar} 
-                                                style={{ backgroundColor: '#0075F3' }} 
-                                                icon={<UserOutlined />} 
+                                        <Space className="user-info" style={{ cursor: 'pointer', userSelect: 'none' }}>
+                                            <Avatar
+                                                src={user?.avatar}
+                                                style={{ backgroundColor: '#0075F3' }}
+                                                icon={<UserOutlined />}
                                             />
                                             <span className="user-name">
-                                                {user?.name || "Học viên"} <DownOutlined style={{fontSize: '12px'}}/>
+                                                {user?.name || "Học viên"} <DownOutlined style={{ fontSize: '12px' }} />
                                             </span>
                                         </Space>
                                     </Dropdown>
@@ -104,8 +103,8 @@ function Layout() {
 
                         </div>
                     </header>
-                    
-                    <div style={{ height: '80px' }}></div> 
+
+                    <div style={{ height: '80px' }}></div>
 
                     <main className="layout__main" style={{ flex: 1 }}>
                         <Outlet />
@@ -113,9 +112,9 @@ function Layout() {
 
                     {/* --- FOOTER (Chỉ hiện ở Trang Chủ) --- */}
                     {isHomePage && (
-                        <footer className="layout__footer"> 
+                        <footer className="layout__footer">
                             <div className="layout__footer-container">
-                                
+
                                 <div className="footer-top">
                                     <Row gutter={[40, 40]}>
                                         <Col xs={24} sm={12} md={7}>
@@ -127,9 +126,15 @@ function Layout() {
                                             </p>
                                             <h4>KẾT NỐI VỚI CHÚNG TÔI</h4>
                                             <Space size="middle">
-                                                <Button shape="circle" icon={<FacebookFilled />} />
-                                                <Button shape="circle" icon={<YoutubeFilled />} />
-                                                <Button shape="circle" icon={<InstagramFilled />} />
+                                                <a href="https://www.facebook.com/share/1BkWQyVW9P/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer">
+                                                    <Button shape="circle" icon={<FacebookFilled />} />
+                                                </a>
+                                                <a href="https://www.youtube.com/@englishAiiii" target="_blank" rel="noopener noreferrer">
+                                                    <Button shape="circle" icon={<YoutubeFilled />} />
+                                                </a>
+                                                <a href="https://www.instagram.com/englishaiiii?igsh=d2J3b2dxYTQ5Y2N6&utm_source=qr" target="_blank" rel="noopener noreferrer">
+                                                    <Button shape="circle" icon={<InstagramFilled />} />
+                                                </a>
                                             </Space>
                                         </Col>
 
@@ -138,18 +143,17 @@ function Layout() {
                                             <ul className="footer-links">
                                                 <li><NavLink to="/conversation">Luyện hội thoại AI</NavLink></li>
                                                 <li><NavLink to="/mindmap">Từ vựng Mindmap</NavLink></li>
-                                                <li><NavLink to="#">Tiếng Anh cơ bản</NavLink></li>
-                                                <li><NavLink to="#">Luyện phát âm chuẩn</NavLink></li>
+                                                <li><NavLink to="/chatbox">Trò chuyện Chat Box</NavLink></li>
                                             </ul>
                                         </Col>
 
                                         <Col xs={24} sm={12} md={6}>
                                             <h4>HỖ TRỢ KHÁCH HÀNG</h4>
                                             <ul className="footer-links">
-                                                <li><NavLink to="#">Hướng dẫn học tập</NavLink></li>
-                                                <li><NavLink to="#">Kích hoạt mã Premium</NavLink></li>
-                                                <li><NavLink to="#">Câu hỏi thường gặp (FAQs)</NavLink></li>
-                                                <li><NavLink to="#">Chính sách hoàn tiền</NavLink></li>
+                                                <li><NavLink to="/guide">Hướng dẫn học tập</NavLink></li>
+                                                <li><NavLink to="/activate">Kích hoạt mã Premium</NavLink></li>
+                                                <li><NavLink to="/faq">Câu hỏi thường gặp (FAQs)</NavLink></li>
+                                                <li><NavLink to="/refund-policy">Chính sách hoàn tiền</NavLink></li>
                                             </ul>
                                         </Col>
 
@@ -157,9 +161,9 @@ function Layout() {
                                             <h4>VỀ CHÚNG TÔI</h4>
                                             <ul className="footer-links">
                                                 <li><NavLink to="/about">Câu chuyện thương hiệu</NavLink></li>
-                                                <li><NavLink to="#">Chính sách bảo mật</NavLink></li>
-                                                <li><NavLink to="#">Điều khoản dịch vụ</NavLink></li>
-                                                <li><NavLink to="#">Liên hệ</NavLink></li>
+                                                <li><NavLink to="/privacy-policy">Chính sách bảo mật</NavLink></li>
+                                                <li><NavLink to="/terms-of-service">Điều khoản dịch vụ</NavLink></li>
+                                                <li><NavLink to="/contact">Liên hệ</NavLink></li>
                                             </ul>
                                         </Col>
                                     </Row>
@@ -190,14 +194,13 @@ function Layout() {
                                         </Col>
                                     </Row>
                                 </div>
-                                
+
                                 <div className="layout__footer-copyright" style={{ textAlign: 'center', marginTop: '30px', color: '#bbb', fontSize: '12px' }}>
                                     © 2025 English AI. All rights reserved. @Copyright by Team
                                 </div>
                             </div>
                         </footer>
                     )}
-
                 </div>
             </div>
         </>
